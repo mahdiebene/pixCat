@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" shape-rendering="crispEdges">
+  <!-- Meadow green backdrop -->
+  <rect width="512" height="512" fill="#1f4d36" />
+  <rect x="0" y="0" width="512" height="32" fill="#143324" />
+  <rect x="0" y="480" width="512" height="32" fill="#143324" />
+  <rect x="0" y="0" width="32" height="512" fill="#143324" />
+  <rect x="480" y="0" width="32" height="512" fill="#143324" />
+  <!-- Sunlit clearing circle -->
+  <rect x="80" y="96" width="352" height="320" fill="#296346" />
+  <rect x="112" y="80" width="288" height="352" fill="#296346" />
+  <!-- Cute pixel daisies -->
+  <rect x="72" y="392" width="24" height="24" fill="#ffffff" />
+  <rect x="80" y="400" width="8" height="8" fill="#ffd43b" />
+  <rect x="416" y="104" width="24" height="24" fill="#ffd6e6" />
+  <rect x="424" y="112" width="8" height="8" fill="#ffd43b" />
+  <!-- Pixel Cat Outline (Mochi) -->
+  <rect x="112" y="96" width="64" height="64" fill="#09090d" />
+  <rect x="336" y="96" width="64" height="64" fill="#09090d" />
+  <rect x="96" y="144" width="320" height="240" fill="#09090d" />
+  <rect x="112" y="128" width="288" height="272" fill="#09090d" />
+  <!-- White face fill -->
+  <rect x="112" y="160" width="288" height="208" fill="#ffffff" />
+  <rect x="128" y="144" width="256" height="240" fill="#ffffff" />
+  <!-- Soft under-chin shade -->
+  <rect x="128" y="352" width="256" height="32" fill="#ded9d5" />
+  <!-- Left & right ears -->
+  <rect x="128" y="112" width="48" height="48" fill="#b59282" />
+  <rect x="144" y="128" width="32" height="32" fill="#f2a499" />
+  <rect x="336" y="112" width="48" height="48" fill="#b59282" />
+  <rect x="336" y="128" width="32" height="32" fill="#f2a499" />
+  <!-- Calico forehead patch -->
+  <rect x="128" y="144" width="112" height="64" fill="#b59282" />
+  <rect x="128" y="144" width="48" height="48" fill="#8c6d5f" />
+  <!-- Cute pink bow accent -->
+  <rect x="296" y="116" width="28" height="28" fill="#ff5e8e" />
+  <rect x="340" y="116" width="28" height="28" fill="#ff5e8e" />
+  <rect x="320" y="124" width="24" height="20" fill="#ff9ec0" />
+  <!-- Big glossy pixel eyes -->
+  <rect x="160" y="224" width="44" height="52" fill="#09090d" />
+  <rect x="168" y="232" width="16" height="16" fill="#ffffff" />
+  <rect x="188" y="256" width="8" height="8" fill="#ffffff" />
+  <rect x="308" y="224" width="44" height="52" fill="#09090d" />
+  <rect x="316" y="232" width="16" height="16" fill="#ffffff" />
+  <rect x="336" y="256" width="8" height="8" fill="#ffffff" />
+  <!-- Rosy blush cheeks -->
+  <rect x="124" y="276" width="40" height="20" fill="#f59aa3" />
+  <rect x="348" y="276" width="40" height="20" fill="#f59aa3" />
+  <!-- Tiny pink nose & w-mouth -->
+  <rect x="240" y="276" width="32" height="16" fill="#eb6c7d" />
+  <rect x="224" y="296" width="16" height="16" fill="#09090d" />
+  <rect x="240" y="308" width="12" height="12" fill="#09090d" />
+  <rect x="252" y="296" width="8" height="12" fill="#09090d" />
+  <rect x="260" y="308" width="12" height="12" fill="#09090d" />
+  <rect x="272" y="296" width="16" height="16" fill="#09090d" />
+</svg>

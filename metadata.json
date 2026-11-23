@@ -1,0 +1,10 @@
+{
+  "name": "Mochi — Pixel Talking Cat",
+  "description": "Cozy retro pixel-art virtual pet game with five richly detailed isometric rooms, direct drag-and-click interactions, dress-up, voice mimicry, and a Fish Catch arcade mini-game.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

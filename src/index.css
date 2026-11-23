@@ -1,0 +1,265 @@
+@import "tailwindcss";
+
+:root {
+  --bg-outer: #0d2117;
+  --bg-cabinet: #153123;
+  --meadow-green: #1f4d36;
+  --hud-navy: #1f2847;
+  --hud-border: #090d1a;
+  --cream: #f4efe6;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100dvh;
+  width: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  background-color: var(--bg-outer);
+  background-image:
+    radial-gradient(circle at 18% 18%, rgba(56, 128, 86, 0.24) 0%, transparent 48%),
+    radial-gradient(circle at 82% 82%, rgba(42, 51, 86, 0.34) 0%, transparent 50%);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  color: var(--cream);
+  overflow-x: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.font-pixel {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+}
+
+.font-pixel-body {
+  font-family: 'VT323', 'Courier New', monospace;
+}
+
+.pixel-canvas {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  display: block;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+/* Mobile: edge-to-edge full-bleed app shell; Desktop (sm+): framed retro cabinet */
+.pixel-frame {
+  background: #132c1f;
+  border: none;
+  border-radius: 0;
+}
+
+@media (min-width: 640px) {
+  .pixel-frame {
+    border: 4px solid #08130d;
+    border-radius: 14px;
+    box-shadow:
+      0 14px 36px rgba(0, 0, 0, 0.55),
+      inset 0 2px 0 rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Mobile: fills full remaining vertical height seamlessly; Desktop (sm+): crisp 4:3 stage */
+.canvas-stage {
+  position: relative;
+  width: 100%;
+  flex: 1 1 0%;
+  min-height: 0;
+  background: #1f4d36;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .canvas-stage {
+    flex: none;
+    aspect-ratio: 4 / 3;
+    border: 4px solid #08130d;
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 2px #143324;
+  }
+}
+
+.hud-panel {
+  background: #1f2847;
+  border-bottom: 3px solid #090d1a;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.1);
+}
+
+@media (min-width: 640px) {
+  .hud-panel {
+    border: 3px solid #090d1a;
+  }
+}
+
+.stat-track {
+  height: 9px;
+  background: #0d1221;
+  border: 2px solid #06080f;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stat-fill {
+  height: 100%;
+  transition: width 180ms ease-out, background-color 200ms ease;
+}
+
+.px-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  line-height: 1.25;
+  color: #ffffff;
+  background: #4d568c;
+  border: 3px solid #090c14;
+  border-radius: 8px;
+  padding: 7px 10px;
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.28),
+    0 3px 0 #090c14;
+  cursor: pointer;
+  transition: transform 80ms ease, box-shadow 80ms ease, filter 120ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.px-btn:hover:not(:disabled) {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+.px-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 0 rgba(0, 0, 0, 0.25),
+    0 1px 0 #090c14;
+}
+
+.px-btn:focus-visible {
+  outline: 3px solid #ffe066;
+  outline-offset: 2px;
+}
+
+.px-btn-green {
+  background: #38945b;
+}
+
+.px-btn-cream {
+  background: #f4efe6;
+  color: #8c3434;
+  text-shadow: none;
+}
+
+.px-btn-amber {
+  background: #ffd43b;
+  color: #090c14;
+  text-shadow: none;
+}
+
+.px-play-btn {
+  font-family: 'Press Start 2P', monospace;
+  color: #ffffff;
+  background: #525c94;
+  border: 4px solid #09090d;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 4px 0 #7b87c4,
+    inset 0 -5px 0 #383f6b,
+    0 5px 0 #09090d;
+  text-shadow: 2px 2px 0 #252b4a;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 90ms ease, filter 120ms ease, box-shadow 90ms ease;
+}
+
+.px-play-btn:hover {
+  background: #616cad;
+  transform: translateY(-2px);
+}
+
+.px-play-btn:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 2px 0 #383f6b,
+    0 2px 0 #09090d;
+}
+
+.px-play-btn:focus-visible {
+  outline: 3px solid #ffe066;
+  outline-offset: 3px;
+}
+
+.hint-bar {
+  background: #172038;
+  border-top: 3px solid #090d1a;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.06);
+}
+
+@media (min-width: 640px) {
+  .hint-bar {
+    border: 3px solid #090d1a;
+  }
+}
+
+.pixel-input {
+  width: 100%;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  padding: 10px 12px;
+  background: #f4efe6;
+  color: #1f2847;
+  border: 3px solid #090c14;
+  border-radius: 8px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.pixel-input:focus-visible {
+  outline: 3px solid #ffe066;
+  outline-offset: 2px;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-sheet-enter {
+  animation: sheet-in 170ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .px-btn,
+  .px-play-btn,
+  .stat-fill {
+    transition: none;
+  }
+
+  .mobile-sheet-enter {
+    animation: none;
+  }
+}

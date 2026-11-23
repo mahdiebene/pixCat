@@ -1,0 +1,3196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Mochi - Pixel Talking Cat</title>
+  <!-- Load Tailwind CSS for responsive layout helpers -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load retro pixel font Press Start 2P -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =========================================================================
+       COZY RETRO PIXEL THEME & CUSTOM BUTTON STYLING
+       ========================================================================= */
+    :root {
+      --bg-outer: #0e2419;
+      --bg-cabinet: #183627;
+      --meadow-green: #1f4d36;
+      --slate-btn: #525c94;
+      --slate-btn-dark: #383f6b;
+      --slate-btn-light: #7580bd;
+      --cream-pill: #f4efe6;
+      --ink-red: #9c3838;
+      --navy-card: #2a3356;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-outer);
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(46, 107, 74, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(42, 51, 86, 0.3) 0%, transparent 50%);
+      font-family: 'Press Start 2P', 'Courier New', monospace;
+      color: #f4efe6;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    /* Pixel-crisp canvas rendering */
+    canvas {
+      image-rendering: -moz-crisp-edges;
+      image-rendering: -webkit-crisp-edges;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      display: block;
+      touch-action: none;
+    }
+
+    /* Main responsive game shell */
+    .game-shell {
+      width: 100%;
+      max-width: 780px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Pixel Cabinet Frame */
+    .pixel-frame {
+      background: #132c1f;
+      border: 4px solid #09140e;
+      border-radius: 14px;
+      box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.55),
+        inset 0 2px 0 rgba(255, 255, 255, 0.08);
+      padding: 8px;
+    }
+
+    /* Canvas wrapper maintaining crisp 4:3 aspect ratio */
+    .canvas-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #1f4d36;
+      border: 4px solid #09140e;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 2px #143324;
+    }
+
+    #gameCanvas {
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    /* Chunky Retro Pixel Buttons */
+    .px-btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      line-height: 1.25;
+      color: #ffffff;
+      background: linear-gradient(180deg, #626da8 0%, #4d568c 65%, #3d4573 100%);
+      border: 3px solid #0a0c14;
+      border-radius: 10px;
+      padding: 9px 12px;
+      box-shadow:
+        inset 0 3px 0 rgba(255, 255, 255, 0.25),
+        inset 0 -3px 0 rgba(0, 0, 0, 0.3),
+        0 4px 0 #0a0c14;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+      white-space: nowrap;
+    }
+
+    .px-btn:hover:not(:disabled) {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+    }
+
+    .px-btn:active:not(:disabled),
+    .px-btn.active {
+      transform: translateY(3px);
+      box-shadow:
+        inset 0 2px 0 rgba(0, 0, 0, 0.25),
+        0 1px 0 #0a0c14;
+    }
+
+    .px-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .px-btn-pink {
+      background: linear-gradient(180deg, #e87fa5 0%, #cf5d88 65%, #a84269 100%);
+    }
+
+    .px-btn-green {
+      background: linear-gradient(180deg, #52b878 0%, #38945b 65%, #277043 100%);
+    }
+
+    .px-btn-amber {
+      background: linear-gradient(180deg, #f0b849 0%, #d99526 65%, #b37417 100%);
+    }
+
+    .px-btn-cyan {
+      background: linear-gradient(180deg, #5ebfd4 0%, #3d9ab0 65%, #2b778a 100%);
+    }
+
+    .px-btn-cream {
+      background: linear-gradient(180deg, #faf6ee 0%, #ebe3d5 100%);
+      color: #8c3434;
+      text-shadow: none;
+    }
+
+    .px-btn-recording {
+      background: linear-gradient(180deg, #ff5e6c 0%, #d93644 65%, #a61f2c 100%);
+      animation: recPulse 0.7s infinite alternate;
+    }
+
+    @keyframes recPulse {
+      from { filter: brightness(1); }
+      to { filter: brightness(1.25); }
+    }
+
+    /* HUD Bar Styling */
+    .hud-panel {
+      background: #1f2847;
+      border: 3px solid #090d1a;
+      border-radius: 10px;
+      padding: 8px 10px;
+      box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-track {
+      height: 10px;
+      background: #0d1221;
+      border: 2px solid #06080f;
+      border-radius: 4px;
+      overflow: hidden;
+      min-width: 46px;
+    }
+
+    .stat-fill {
+      height: 100%;
+      transition: width 0.25s ease, background-color 0.25s ease;
+    }
+
+    /* Contextual Bottom Action Deck */
+    .action-deck {
+      background: #1b2440;
+      border: 3px solid #090d1a;
+      border-radius: 10px;
+      padding: 10px;
+      min-height: 64px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    /* Floating Retro Toast */
+    .pixel-toast {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-16px);
+      background: #f4efe6;
+      color: #2a3356;
+      border: 3px solid #0a0c14;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 9px;
+      line-height: 1.4;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 30;
+      text-align: center;
+      max-width: 90%;
+    }
+
+    .pixel-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Custom Pixel Modal (for Pet Renaming - zero prompt()/alert()) */
+    .pixel-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 16, 12, 0.78);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 16px;
+    }
+
+    .pixel-modal-backdrop.open {
+      display: flex;
+    }
+
+    .pixel-modal {
+      background: #242e4f;
+      border: 4px solid #0a0c14;
+      border-radius: 14px;
+      padding: 20px;
+      width: 100%;
+      max-width: 340px;
+      box-shadow: 0 12px 0 rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    .pixel-input {
+      width: 100%;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 12px;
+      padding: 10px 12px;
+      background: #f4efe6;
+      color: #1f2847;
+      border: 3px solid #0a0c14;
+      border-radius: 8px;
+      outline: none;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .game-shell {
+        padding: 4px;
+        gap: 6px;
+      }
+      .pixel-frame {
+        padding: 5px;
+      }
+      .px-btn {
+        font-size: 8.5px;
+        padding: 8px 9px;
+      }
+      .hud-panel {
+        padding: 6px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Main Responsive Retro Game Shell -->
+  <div class="game-shell">
+    <div class="pixel-frame flex flex-col gap-2">
+
+      <!-- TOP HUD BAR (Hidden on pure Title Screen, visible on Hub & Rooms) -->
+      <div id="hudBar" class="hud-panel hidden flex-col gap-2">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <!-- Editable Pet Name Badge -->
+          <div class="flex items-center gap-2">
+            <button id="btnRename" class="px-btn px-btn-cream !py-1.5 !px-2.5 !text-[9px]" title="Click to rename your kitty!">
+              <span>🐱</span>
+              <span id="petNameDisplay">MOCHI</span>
+              <span class="opacity-60 text-[8px]">✎</span>
+            </button>
+            <div class="flex items-center gap-1.5 bg-[#12182e] border-2 border-[#080b14] rounded-lg px-2.5 py-1.5 text-[9px] text-amber-300">
+              <span>●</span>
+              <span id="coinDisplay">25</span>
+            </div>
+          </div>
+
+          <!-- Navigation & Audio Controls -->
+          <div class="flex items-center gap-1.5">
+            <button id="btnSound" class="px-btn !py-1.5 !px-2.5 !text-[9px]" title="Toggle 8-bit Sound">🔊</button>
+            <button id="btnMap" class="px-btn px-btn-green !py-1.5 !px-2.5 !text-[9px]">🗺 MAP</button>
+          </div>
+        </div>
+
+        <!-- 4 Crisp Pixel Stat Bars -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-0.5">
+          <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[7.5px] text-amber-200">
+              <span>🐟 HUNGER</span>
+              <span id="valHunger">80%</span>
+            </div>
+            <div class="stat-track"><div id="barHunger" class="stat-fill bg-emerald-400" style="width:80%"></div></div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[7.5px] text-sky-200">
+              <span>🫧 HYGIENE</span>
+              <span id="valHygiene">80%</span>
+            </div>
+            <div class="stat-track"><div id="barHygiene" class="stat-fill bg-sky-400" style="width:80%"></div></div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[7.5px] text-purple-200">
+              <span>🌙 ENERGY</span>
+              <span id="valEnergy">80%</span>
+            </div>
+            <div class="stat-track"><div id="barEnergy" class="stat-fill bg-purple-400" style="width:80%"></div></div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <div class="flex justify-between text-[7.5px] text-pink-200">
+              <span>💖 FUN</span>
+              <span id="valFun">80%</span>
+            </div>
+            <div class="stat-track"><div id="barFun" class="stat-fill bg-pink-400" style="width:80%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CRISP PIXEL ART GAME CANVAS -->
+      <div class="canvas-stage">
+        <canvas id="gameCanvas" width="360" height="270"></canvas>
+        <!-- Non-intrusive Pixel Toast Message -->
+        <div id="pixelToast" class="pixel-toast"></div>
+      </div>
+
+      <!-- CONTEXTUAL ROOM ACTION DECK (Outside Canvas for clean gameplay & touch usability) -->
+      <div id="actionDeck" class="action-deck hidden"></div>
+
+    </div>
+  </div>
+
+  <!-- CUSTOM PIXEL MODAL: RENAME PET -->
+  <div id="renameModal" class="pixel-modal-backdrop">
+    <div class="pixel-modal flex flex-col gap-4">
+      <div class="text-[11px] text-amber-200 leading-relaxed">NAME YOUR KITTY</div>
+      <input id="renameInput" type="text" maxlength="10" class="pixel-input" placeholder="MOCHI" />
+      <div class="flex justify-center gap-3">
+        <button id="btnCancelRename" class="px-btn !text-[9px]">CANCEL</button>
+        <button id="btnSaveRename" class="px-btn px-btn-green !text-[9px]">SAVE</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       MOCHI - PIXEL TALKING CAT GAME ENGINE
+       Single-file 100% procedural pixel art + Web Audio 8-bit synth + Voice Mimic
+       Logical Resolution: 360 x 270 (4:3 crisp pixel ratio matching mockups)
+       ========================================================================= */
+
+    const W = 360;
+    const H = 270;
+
+    // -------------------------------------------------------------------------
+    // 1. PERSISTENT GAME STATE
+    // -------------------------------------------------------------------------
+    const STORAGE_KEY = 'pixel_talking_cat_v1';
+
+    const FUR_PALETTES = {
+      classic: {
+        name: 'CLASSIC',
+        swatch: '#b59282',
+        body: '#ffffff',
+        shade: '#ded9d5',
+        patch: '#b59282',
+        patchDark: '#8c6d5f',
+        earInner: '#f2a499',
+        blush: '#f59aa3',
+        outline: '#09090d'
+      },
+      tabby: {
+        name: 'TABBY',
+        swatch: '#e88b43',
+        body: '#ffe0b5',
+        shade: '#f0c48d',
+        patch: '#e88b43',
+        patchDark: '#bd6526',
+        earInner: '#f7a6a1',
+        blush: '#f28b94',
+        outline: '#09090d'
+      },
+      tuxedo: {
+        name: 'TUXEDO',
+        swatch: '#3a4154',
+        body: '#3a4154',
+        shade: '#272c3b',
+        patch: '#ffffff',
+        patchDark: '#d9dde8',
+        earInner: '#e899a4',
+        blush: '#f28d9d',
+        outline: '#09090d'
+      },
+      cotton: {
+        name: 'COTTON',
+        swatch: '#f2a2d4',
+        body: '#fff5fb',
+        shade: '#ebd8e6',
+        patch: '#f2a2d4',
+        patchDark: '#c978ad',
+        earInner: '#ffd1dc',
+        blush: '#ff8fb8',
+        outline: '#09090d'
+      }
+    };
+
+    const ACCESSORIES = [
+      { id: 'none', label: 'NONE', cost: 0 },
+      { id: 'bow', label: 'PINK BOW', cost: 0 },
+      { id: 'shades', label: 'SHADES', cost: 10 },
+      { id: 'daisy', label: 'DAISY', cost: 12 },
+      { id: 'scarf', label: 'SCARF', cost: 15 },
+      { id: 'frog', label: 'FROG HAT', cost: 20 },
+      { id: 'crown', label: 'CROWN', cost: 30 }
+    ];
+
+    const FOODS = [
+      { id: 'fish', label: 'FISH', icon: '🐟', cost: 0, hunger: 20, fun: 4, energy: 2, msg: 'YUMMY FISH!' },
+      { id: 'milk', label: 'MILK', icon: '🥛', cost: 0, hunger: 16, fun: 4, energy: 6, msg: 'SLURP SLURP~' },
+      { id: 'boba', label: 'BOBA', icon: '🧋', cost: 5, hunger: 22, fun: 16, energy: 8, msg: 'SWEET BOBA!' },
+      { id: 'sushi', label: 'SUSHI', icon: '🍣', cost: 8, hunger: 36, fun: 10, energy: 5, msg: 'FANCY SUSHI!' },
+      { id: 'cake', label: 'CAKE', icon: '🍰', cost: 10, hunger: 30, fun: 26, energy: 6, msg: 'BEST CAKE <3' }
+    ];
+
+    const state = {
+      screen: 'title', // 'title' | 'hub' | 'bedroom' | 'bathroom' | 'playroom' | 'kitchen' | 'closet'
+      petName: 'MOCHI',
+      coins: 25,
+      muted: false,
+      stats: {
+        hunger: 82,
+        hygiene: 78,
+        energy: 85,
+        fun: 80
+      },
+      fur: 'classic',
+      accessory: 'none',
+      ownedAccessories: ['none', 'bow'],
+      closetTab: 'acc', // 'acc' | 'fur'
+      highScore: 0,
+
+      // Room states
+      bedroom: {
+        lampOn: true,
+        sleeping: false,
+        lullabyTimer: 0
+      },
+      bathroom: {
+        spongeActive: false,
+        showerOn: false,
+        soapLevel: 0, // 0..100
+        soapBubbles: [], // bubbles stuck on cat
+        duckHop: 0,
+        waterDrops: []
+      },
+      playroom: {
+        recording: false,
+        mimicking: false,
+        audioAmp: 0,
+        micLevel: 0,
+        yarn: { active: false, x: 240, y: 195, vx: 0, vy: 0, rot: 0 },
+        miniGame: {
+          active: false,
+          score: 0,
+          coinsEarned: 0,
+          timeLeft: 30,
+          catX: W / 2,
+          targetX: W / 2,
+          items: [],
+          spawnTimer: 0,
+          gameOver: false
+        }
+      },
+      kitchen: {
+        flyingFood: null, // { id, sx, sy, x, y, t, food }
+        chewTimer: 0
+      },
+
+      // Cat live animation & expression state
+      cat: {
+        x: W / 2,
+        y: 160,
+        hopY: 0,
+        hopVy: 0,
+        expression: 'idle', // 'idle' | 'happy' | 'surprised' | 'talking' | 'eating' | 'sleeping'
+        exprTimer: 0,
+        blinkTimer: 2.5,
+        isBlinking: false,
+        mouthOpen: 0, // 0..1
+        speechText: '',
+        speechTimer: 0,
+        petRubDist: 0,
+        purrCooldown: 0
+      },
+
+      // Particles & UI Hover
+      particles: [],
+      hoveredRoom: null,
+      hoveredPlayBtn: false,
+      pointerDown: false,
+      pointerX: 0,
+      pointerY: 0,
+      lastPointerX: 0,
+      lastPointerY: 0,
+      pointerDownTime: 0,
+      pointerMovedDist: 0,
+      keys: { left: false, right: false }
+    };
+
+    function saveState() {
+      try {
+        const data = {
+          petName: state.petName,
+          coins: state.coins,
+          muted: state.muted,
+          stats: state.stats,
+          fur: state.fur,
+          accessory: state.accessory,
+          ownedAccessories: state.ownedAccessories,
+          highScore: state.highScore
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {
+        // Ignore storage quota / iframe restrictions
+      }
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (data.petName) state.petName = String(data.petName).slice(0, 10);
+        if (typeof data.coins === 'number') state.coins = Math.max(0, Math.floor(data.coins));
+        if (typeof data.muted === 'boolean') state.muted = data.muted;
+        if (data.stats) {
+          ['hunger', 'hygiene', 'energy', 'fun'].forEach(k => {
+            if (typeof data.stats[k] === 'number') {
+              state.stats[k] = Math.max(5, Math.min(100, data.stats[k]));
+            }
+          });
+        }
+        if (data.fur && FUR_PALETTES[data.fur]) state.fur = data.fur;
+        if (Array.isArray(data.ownedAccessories)) state.ownedAccessories = data.ownedAccessories;
+        if (data.accessory) state.accessory = data.accessory;
+        if (typeof data.highScore === 'number') state.highScore = data.highScore;
+      } catch (e) {
+        // Fallback to defaults
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. 8-BIT WEB AUDIO SYNTHESIZER + VOICE MIMIC ENGINE
+    // -------------------------------------------------------------------------
+    class RetroAudio {
+      constructor() {
+        this.ctx = null;
+        this.noiseBuf = null;
+        this.showerNode = null;
+        this.showerGain = null;
+
+        // Voice mimic properties
+        this.mediaStream = null;
+        this.mediaRecorder = null;
+        this.recordedChunks = [];
+        this.micAnalyser = null;
+        this.micData = null;
+        this.playAnalyser = null;
+        this.playData = null;
+        this.activeSource = null;
+        this.recordTimeout = null;
+      }
+
+      ensure() {
+        if (!this.ctx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return null;
+          this.ctx = new AC();
+          // Create 1s reusable white noise buffer for crunch/shower/purr
+          const len = this.ctx.sampleRate;
+          this.noiseBuf = this.ctx.createBuffer(1, len, len);
+          const ch = this.noiseBuf.getChannelData(0);
+          for (let i = 0; i < len; i++) ch[i] = Math.random() * 2 - 1;
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+        return this.ctx;
+      }
+
+      tone(freq, endFreq, dur, type = 'square', vol = 0.12, delay = 0) {
+        if (state.muted) return;
+        const ctx = this.ensure();
+        if (!ctx) return;
+        const now = ctx.currentTime + delay;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+        if (endFreq !== freq) {
+          osc.frequency.exponentialRampToValueAtTime(Math.max(30, endFreq), now + dur);
+        }
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.linearRampToValueAtTime(vol, now + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + dur + 0.02);
+      }
+
+      playClick() {
+        this.tone(540, 720, 0.06, 'square', 0.08);
+      }
+
+      playStartChime() {
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((n, i) => this.tone(n, n, 0.11, 'square', 0.09, i * 0.07));
+      }
+
+      playCoin() {
+        this.tone(987.77, 987.77, 0.07, 'square', 0.09, 0);
+        this.tone(1318.5, 1318.5, 0.18, 'square', 0.09, 0.07);
+      }
+
+      playBoop() {
+        this.tone(360, 760, 0.11, 'triangle', 0.16);
+        this.tone(760, 520, 0.09, 'sine', 0.12, 0.09);
+      }
+
+      playMeow(variant = 0) {
+        if (state.muted) return;
+        const base = [620, 700, 560, 780][variant % 4];
+        this.tone(base, base * 1.45, 0.14, 'triangle', 0.15, 0);
+        this.tone(base * 1.45, base * 0.92, 0.22, 'triangle', 0.13, 0.12);
+        this.tone(base * 1.01, base * 1.44, 0.14, 'square', 0.035, 0);
+      }
+
+      playPurr() {
+        if (state.muted) return;
+        const ctx = this.ensure();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        const mainGain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(52, now);
+        lfo.frequency.setValueAtTime(24, now);
+        lfoGain.gain.setValueAtTime(0.05, now);
+        mainGain.gain.setValueAtTime(0.001, now);
+        mainGain.gain.linearRampToValueAtTime(0.06, now + 0.05);
+        mainGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 180;
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(mainGain.gain);
+        osc.connect(filter);
+        filter.connect(mainGain);
+        mainGain.connect(ctx.destination);
+        osc.start(now);
+        lfo.start(now);
+        osc.stop(now + 0.36);
+        lfo.stop(now + 0.36);
+      }
+
+      playBubblePop() {
+        const f = 450 + Math.random() * 450;
+        this.tone(f, f * 2.1, 0.07, 'sine', 0.11);
+      }
+
+      playDuckSqueak() {
+        this.tone(1150, 1520, 0.09, 'square', 0.08, 0);
+        this.tone(1480, 1020, 0.1, 'triangle', 0.11, 0.07);
+      }
+
+      playCrunch() {
+        if (state.muted) return;
+        const ctx = this.ensure();
+        if (!ctx || !this.noiseBuf) return;
+        for (let i = 0; i < 3; i++) {
+          const now = ctx.currentTime + i * 0.14;
+          const src = ctx.createBufferSource();
+          src.buffer = this.noiseBuf;
+          const filt = ctx.createBiquadFilter();
+          filt.type = 'bandpass';
+          filt.frequency.value = 1200 + i * 250;
+          const g = ctx.createGain();
+          g.gain.setValueAtTime(0.14, now);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+          src.connect(filt);
+          filt.connect(g);
+          g.connect(ctx.destination);
+          src.start(now);
+          src.stop(now + 0.09);
+        }
+      }
+
+      playLullabyNote(step) {
+        const melody = [523.25, 659.25, 783.99, 659.25, 587.33, 659.25, 523.25];
+        const f = melody[step % melody.length];
+        this.tone(f, f, 0.42, 'triangle', 0.06);
+      }
+
+      setShowerSound(on) {
+        if (state.muted || !on) {
+          if (this.showerNode) {
+            try { this.showerNode.stop(); } catch (e) {}
+            this.showerNode = null;
+          }
+          return;
+        }
+        const ctx = this.ensure();
+        if (!ctx || !this.noiseBuf || this.showerNode) return;
+        const src = ctx.createBufferSource();
+        src.buffer = this.noiseBuf;
+        src.loop = true;
+        const filt = ctx.createBiquadFilter();
+        filt.type = 'bandpass';
+        filt.frequency.value = 1900;
+        filt.Q.value = 0.6;
+        const g = ctx.createGain();
+        g.gain.value = 0.055;
+        src.connect(filt);
+        filt.connect(g);
+        g.connect(ctx.destination);
+        src.start();
+        this.showerNode = src;
+        this.showerGain = g;
+      }
+
+      // ---- Talking Tom Voice Mimic (Pitch-shifted Web Audio playback) ----
+      async startRecording() {
+        if (state.playroom.recording) return;
+        const ctx = this.ensure();
+        if (!ctx) {
+          showToast('Audio unavailable - try SAY MEOW!');
+          return;
+        }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          showToast('Mic not supported here - try SAY MEOW!');
+          triggerSyntheticMeow();
+          return;
+        }
+        try {
+          // Stop any existing mimic playback
+          if (this.activeSource) {
+            try { this.activeSource.stop(); } catch (e) {}
+            this.activeSource = null;
+          }
+          state.playroom.mimicking = false;
+
+          if (!this.mediaStream) {
+            this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          }
+
+          // Setup live mic analyser for pixel waveform visualizer
+          const micSource = ctx.createMediaStreamSource(this.mediaStream);
+          this.micAnalyser = ctx.createAnalyser();
+          this.micAnalyser.fftSize = 256;
+          this.micData = new Uint8Array(this.micAnalyser.frequencyBinCount);
+          micSource.connect(this.micAnalyser);
+
+          this.recordedChunks = [];
+          this.mediaRecorder = new MediaRecorder(this.mediaStream);
+          this.mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) this.recordedChunks.push(e.data);
+          };
+          this.mediaRecorder.onstop = () => {
+            this.processAndMimic();
+          };
+
+          this.mediaRecorder.start();
+          state.playroom.recording = true;
+          state.cat.speechText = 'LISTENING...';
+          state.cat.speechTimer = 5;
+          updateActionDeck();
+
+          // Auto-stop after 5 seconds max
+          clearTimeout(this.recordTimeout);
+          this.recordTimeout = setTimeout(() => {
+            if (state.playroom.recording) this.stopRecording();
+          }, 5000);
+        } catch (err) {
+          state.playroom.recording = false;
+          updateActionDeck();
+          showToast('Mic permission needed - try SAY MEOW!');
+          triggerSyntheticMeow();
+        }
+      }
+
+      stopRecording() {
+        clearTimeout(this.recordTimeout);
+        if (!state.playroom.recording) return;
+        state.playroom.recording = false;
+        state.playroom.micLevel = 0;
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+          try { this.mediaRecorder.stop(); } catch (e) {}
+        }
+        updateActionDeck();
+      }
+
+      async processAndMimic() {
+        const ctx = this.ensure();
+        if (!ctx || this.recordedChunks.length === 0) return;
+        try {
+          const blob = new Blob(this.recordedChunks);
+          const arrBuf = await blob.arrayBuffer();
+          const audioBuf = await ctx.decodeAudioData(arrBuf);
+
+          if (audioBuf.duration < 0.15) {
+            triggerSyntheticMeow();
+            return;
+          }
+
+          const src = ctx.createBufferSource();
+          src.buffer = audioBuf;
+          src.playbackRate.value = 1.48; // Classic cute Talking Tom pitch-shift!
+
+          this.playAnalyser = ctx.createAnalyser();
+          this.playAnalyser.fftSize = 256;
+          this.playData = new Uint8Array(this.playAnalyser.frequencyBinCount);
+
+          const gain = ctx.createGain();
+          gain.gain.value = state.muted ? 0 : 1.15;
+
+          src.connect(this.playAnalyser);
+          this.playAnalyser.connect(gain);
+          gain.connect(ctx.destination);
+
+          this.activeSource = src;
+          state.playroom.mimicking = true;
+          state.cat.expression = 'talking';
+          state.cat.speechText = `${state.petName} SAYS...`;
+          state.cat.speechTimer = (audioBuf.duration / 1.48) + 0.5;
+          addStat('fun', 8);
+
+          src.onended = () => {
+            state.playroom.mimicking = false;
+            state.playroom.audioAmp = 0;
+            state.cat.mouthOpen = 0;
+            if (state.cat.expression === 'talking') state.cat.expression = 'idle';
+            this.activeSource = null;
+          };
+
+          src.start();
+        } catch (err) {
+          triggerSyntheticMeow();
+        }
+      }
+
+      sampleAmplitude() {
+        if (state.playroom.recording && this.micAnalyser && this.micData) {
+          this.micAnalyser.getByteTimeDomainData(this.micData);
+          let sum = 0;
+          for (let i = 0; i < this.micData.length; i++) {
+            const v = (this.micData[i] - 128) / 128;
+            sum += v * v;
+          }
+          state.playroom.micLevel = Math.min(1, Math.sqrt(sum / this.micData.length) * 4.5);
+        }
+        if (state.playroom.mimicking && this.playAnalyser && this.playData) {
+          this.playAnalyser.getByteTimeDomainData(this.playData);
+          let sum = 0;
+          for (let i = 0; i < this.playData.length; i++) {
+            const v = (this.playData[i] - 128) / 128;
+            sum += v * v;
+          }
+          const amp = Math.min(1, Math.sqrt(sum / this.playData.length) * 5.2);
+          state.playroom.audioAmp = amp;
+          state.cat.mouthOpen = amp > 0.08 ? Math.min(1, amp * 1.4) : 0;
+        }
+      }
+    }
+
+    const audio = new RetroAudio();
+
+    // -------------------------------------------------------------------------
+    // 3. OFF-SCREEN PROCEDURAL MEADOW TILEMAP (Matches Mockups 1 & 2!)
+    // -------------------------------------------------------------------------
+    const meadowCanvas = document.createElement('canvas');
+    meadowCanvas.width = W;
+    meadowCanvas.height = H;
+    const mctx = meadowCanvas.getContext('2d');
+
+    function buildMeadowTilemap() {
+      // Base deep forest green (#1f4d36)
+      mctx.fillStyle = '#1f4d36';
+      mctx.fillRect(0, 0, W, H);
+
+      // Helper to draw a dark leafy border tile (10x10)
+      function drawBorderLeaf(x, y) {
+        mctx.fillStyle = '#143324';
+        mctx.fillRect(x, y, 10, 10);
+        mctx.fillStyle = '#19402d';
+        mctx.fillRect(x + 2, y + 1, 6, 3);
+        mctx.fillRect(x + 1, y + 4, 8, 3);
+        mctx.fillRect(x + 3, y + 7, 4, 2);
+        mctx.fillStyle = '#24573d';
+        mctx.fillRect(x + 3, y + 2, 2, 1);
+        mctx.fillRect(x + 6, y + 5, 2, 1);
+      }
+
+      // Draw dark leafy border around all 4 edges (top 14px, bottom 14px, sides 14px)
+      for (let x = 0; x < W; x += 10) {
+        drawBorderLeaf(x, 0);
+        drawBorderLeaf(x, H - 12);
+      }
+      for (let y = 10; y < H - 10; y += 10) {
+        drawBorderLeaf(0, y);
+        drawBorderLeaf(W - 10, y);
+      }
+      // Inner subtle dark border line
+      mctx.fillStyle = '#173b29';
+      mctx.fillRect(10, 10, W - 20, 2);
+      mctx.fillRect(10, H - 14, W - 20, 2);
+
+      // Helper: Light-green pixel grass tuft (7x6) matching mockup tufts
+      function drawTuft(x, y) {
+        mctx.fillStyle = '#133021'; // dark base shadow
+        mctx.fillRect(x, y + 5, 7, 1);
+        mctx.fillStyle = '#5fa367'; // mid green
+        mctx.fillRect(x, y + 3, 7, 2);
+        mctx.fillRect(x + 1, y + 2, 5, 1);
+        mctx.fillStyle = '#89c981'; // bright top highlight
+        mctx.fillRect(x + 2, y + 1, 3, 2);
+        mctx.fillRect(x + 3, y, 1, 1);
+        mctx.fillStyle = '#3d7347'; // lower shade accents
+        mctx.fillRect(x + 1, y + 4, 2, 1);
+        mctx.fillRect(x + 4, y + 4, 2, 1);
+      }
+
+      // Helper: Dark-green chevron grass marks (pair of ^ ^)
+      function drawChevronPair(x, y) {
+        mctx.fillStyle = '#123323';
+        // upper chevron
+        mctx.fillRect(x + 2, y, 3, 1);
+        mctx.fillRect(x + 1, y + 1, 2, 1);
+        mctx.fillRect(x + 4, y + 1, 2, 1);
+        mctx.fillRect(x, y + 2, 2, 1);
+        mctx.fillRect(x + 5, y + 2, 2, 1);
+        // lower chevron
+        mctx.fillRect(x + 2, y + 7, 3, 1);
+        mctx.fillRect(x + 1, y + 8, 2, 1);
+        mctx.fillRect(x + 4, y + 8, 2, 1);
+        mctx.fillRect(x, y + 9, 2, 1);
+        mctx.fillRect(x + 5, y + 9, 2, 1);
+      }
+
+      // Helper: Tiny white pixel daisy with golden yellow center
+      function drawDaisy(x, y) {
+        mctx.fillStyle = '#123323';
+        mctx.fillRect(x + 2, y + 8, 5, 1);
+        mctx.fillStyle = '#ffffff';
+        mctx.fillRect(x + 2, y, 5, 8);
+        mctx.fillRect(x, y + 2, 9, 4);
+        mctx.fillStyle = '#e4e8ec';
+        mctx.fillRect(x + 1, y + 6, 7, 1);
+        mctx.fillStyle = '#f5cf38'; // yellow center
+        mctx.fillRect(x + 3, y + 3, 3, 2);
+        mctx.fillStyle = '#d99e1e';
+        mctx.fillRect(x + 4, y + 4, 2, 1);
+      }
+
+      // Place winding maze-like rows & columns of grass tufts matching mockup 1 & 2!
+      const tuftRows = [
+        // Top center-left strip
+        { x: 132, y: 20, count: 7, dx: 9, dy: 0 },
+        // Top-left vertical columns
+        { x: 40, y: 34, count: 5, dx: 0, dy: 9 },
+        { x: 64, y: 34, count: 5, dx: 0, dy: 9 },
+        // Upper mid-left cluster
+        { x: 114, y: 44, count: 3, dx: 8, dy: 0 },
+        // Left vertical winding wall
+        { x: 78, y: 66, count: 10, dx: 0, dy: 10 },
+        { x: 35, y: 136, count: 7, dx: 0, dy: 10 },
+        { x: 44, y: 196, count: 4, dx: 9, dy: 0 },
+        { x: 66, y: 206, count: 4, dx: 0, dy: 10 },
+        { x: 40, y: 244, count: 3, dx: 9, dy: 0 },
+        // Central enclosing L-frame around cat (like mockup!)
+        { x: 140, y: 80, count: 13, dx: 9, dy: 0 },
+        { x: 139, y: 90, count: 13, dx: 0, dy: 10 },
+        // Right winding rectangle
+        { x: 262, y: 88, count: 8, dx: 9, dy: 0 },
+        { x: 262, y: 118, count: 8, dx: 9, dy: 0 },
+        { x: 326, y: 54, count: 4, dx: 0, dy: 10 },
+        // Upper right vertical columns
+        { x: 246, y: 28, count: 5, dx: 0, dy: 9 },
+        { x: 270, y: 28, count: 5, dx: 0, dy: 9 },
+        // Lower right paths
+        { x: 236, y: 174, count: 4, dx: 0, dy: 10 },
+        { x: 212, y: 174, count: 4, dx: 0, dy: 10 },
+        { x: 252, y: 216, count: 7, dx: 9, dy: 0 },
+        { x: 312, y: 184, count: 7, dx: 0, dy: 10 },
+        { x: 334, y: 158, count: 7, dx: 0, dy: 10 },
+        { x: 276, y: 150, count: 3, dx: 8, dy: 0 },
+        // Bottom center tufts
+        { x: 108, y: 204, count: 4, dx: 0, dy: 10 },
+        { x: 168, y: 172, count: 7, dx: 0, dy: 10 }
+      ];
+
+      tuftRows.forEach(r => {
+        for (let i = 0; i < r.count; i++) {
+          drawTuft(r.x + i * r.dx, r.y + i * r.dy);
+        }
+      });
+
+      // Scattered lone tufts
+      [[186, 42], [218, 56], [110, 72], [110, 126], [246, 140], [326, 102], [44, 222], [214, 244], [262, 242], [274, 178]]
+        .forEach(([x, y]) => drawTuft(x, y));
+
+      // Scattered dark chevron pairs
+      [[22, 30], [22, 84], [22, 160], [22, 210], [50, 82], [92, 56], [128, 86], [164, 52],
+       [218, 28], [302, 42], [302, 134], [344, 48], [344, 118], [344, 200], [112, 148], [88, 224]]
+        .forEach(([x, y]) => drawChevronPair(x, y));
+
+      // White pixel daisies with yellow centers matching mockup positions
+      [[66, 54], [248, 36], [254, 76], [326, 114], [132, 165], [34, 195], [238, 220]]
+        .forEach(([x, y]) => drawDaisy(x, y));
+    }
+
+    buildMeadowTilemap();
+
+    // -------------------------------------------------------------------------
+    // 4. PIXEL CAT SPRITE RENDERER (EXACT MOCKUP DESIGN + ANIMATIONS + DRESS-UP)
+    // -------------------------------------------------------------------------
+    /**
+     * Draws our adorable white-and-taupe pixel cat at center (cx, cy) with pixel scale `s`.
+     * Matches image_a83cc7.png: thick black outlines, square-round head, taupe top-left patch
+     * & curving wagging tail, pink inner ears, black square eyes, rosy blush cheeks, 'u' mouth,
+     * horizontal collar/neck line, 4 stubby white paws.
+     */
+    function drawPixelCat(ctx, cx, cy, s, time, opts = {}) {
+      const pal = FUR_PALETTES[state.fur] || FUR_PALETTES.classic;
+      const expr = opts.expression || state.cat.expression;
+      const isSleeping = expr === 'sleeping';
+      const isBlinking = opts.blink ?? state.cat.isBlinking;
+      const mouthOpen = opts.mouthOpen ?? state.cat.mouthOpen;
+      const hopY = opts.hopY || 0;
+      const breath = isSleeping ? Math.sin(time * 2.2) * 0.35 : (Math.sin(time * 3.8) > 0.55 ? 0.5 : 0);
+
+      // Anchor grid: 20 wide x 20 tall in cat-pixel units
+      const ox = Math.round(cx - 10 * s);
+      const oy = Math.round(cy - 11 * s + hopY + breath * s * 0.6);
+
+      const px = (gx, gy, w, h, color) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(Math.round(ox + gx * s), Math.round(oy + gy * s), Math.round(w * s), Math.round(h * s));
+      };
+
+      // Ground shadow (skipped when tucked in bed)
+      if (!opts.inBed) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+        const shScale = Math.max(0.65, 1 + hopY / 50);
+        ctx.fillRect(
+          Math.round(cx - 6.5 * s * shScale),
+          Math.round(cy + 8.2 * s),
+          Math.round(13 * s * shScale),
+          Math.round(2.2 * s)
+        );
+      }
+
+      // ---- 1. CURVING WAGGING TAIL (Left side, taupe/brown with thick black outline) ----
+      const wag = isSleeping ? 0 : Math.round(Math.sin(time * (expr === 'happy' ? 12 : 4.2)) * 1);
+      if (!opts.inBed) {
+        // Tail outline
+        px(3, 15, 3, 3, pal.outline);
+        px(1, 13 + wag, 3, 3, pal.outline);
+        px(0, 11 + wag, 3, 3, pal.outline);
+        // Tail inner fill
+        px(4, 16, 2, 1, pal.patchDark);
+        px(2, 14 + wag, 2, 2, pal.patch);
+        px(1, 12 + wag, 1, 2, pal.patch);
+      }
+
+      // ---- 2. BODY & 4 STUBBY PAWS (Hidden if tucked under blanket in bed) ----
+      if (!opts.inBed) {
+        // Thick black body outline
+        px(5, 12, 10, 7, pal.outline);
+        px(5, 18, 4, 2, pal.outline); // left paws outer
+        px(11, 18, 4, 2, pal.outline); // right paws outer
+        px(8, 17, 4, 2, pal.outline); // inner paw gap
+
+        // White body fill
+        px(6, 13, 8, 4, pal.body);
+        // Subtle taupe patch on left hip (faithful to mockup!)
+        px(6, 13, 2, 2, pal.patch);
+        px(6, 15, 1, 2, pal.shade);
+        // 4 little stubby paws
+        px(6, 17, 2, 2, pal.body); // outer left paw
+        px(8, 17, 1, 1, pal.shade);
+        px(9, 17, 2, 1, pal.body); // mid belly
+        px(12, 17, 2, 2, pal.body); // outer right paw
+        px(10, 16, 1, 2, pal.outline); // leg separation pixel
+        px(7, 17, 1, 2, pal.outline); // subtle front paw split
+      }
+
+      // ---- 3. HEAD & EARS (Exact square-rounded silhouette from mockup) ----
+      // Ear outlines
+      px(4, 1, 4, 4, pal.outline);
+      px(12, 1, 4, 4, pal.outline);
+      // Top head outline
+      px(7, 2, 6, 2, pal.outline);
+      // Side cheeks outline
+      px(3, 5, 14, 6, pal.outline);
+      // Lower chin / collar outline
+      px(4, 11, 12, 2, pal.outline);
+
+      // Head base white fill
+      px(4, 5, 12, 6, pal.body);
+      px(5, 3, 10, 9, pal.body);
+
+      // Ear fills (taupe/brown patch on top-left & subtle right ear edge + soft pink inner ears)
+      px(5, 2, 2, 3, pal.patch);
+      px(5, 3, 2, 2, pal.earInner); // left pink inner ear
+      px(7, 3, 2, 2, pal.patch);    // taupe forehead patch (mockup exact!)
+      px(6, 4, 2, 2, pal.shade);    // soft shading below patch
+
+      px(13, 2, 2, 3, pal.patch);
+      px(13, 3, 2, 2, pal.earInner); // right pink inner ear
+      px(12, 3, 1, 1, pal.shade);
+
+      // Subtle left cheek shading (gives mockup's soft 3D pixel depth)
+      px(4, 6, 1, 4, pal.shade);
+      px(5, 10, 1, 1, pal.shade);
+
+      // ---- 4. FACE: EYES, BLUSH CHEEKS, CUTE 'U' MOUTH ----
+      // Rosy pink blush cheeks
+      const blushW = expr === 'happy' ? 2 : 1;
+      px(4, 9, blushW, 1, pal.blush);
+      px(16 - blushW, 9, blushW, 1, pal.blush);
+
+      // Eyes based on expression
+      if (isSleeping) {
+        // Peaceful closed lines (- -)
+        px(6, 8, 2, 1, pal.outline);
+        px(12, 8, 2, 1, pal.outline);
+      } else if (expr === 'happy') {
+        // Happy squinting arcs (^ ^)
+        px(6, 7, 2, 1, pal.outline);
+        px(5, 8, 1, 1, pal.outline);
+        px(8, 8, 1, 1, pal.outline);
+
+        px(12, 7, 2, 1, pal.outline);
+        px(11, 8, 1, 1, pal.outline);
+        px(14, 8, 1, 1, pal.outline);
+      } else if (expr === 'surprised') {
+        // Wide surprised eyes (O O) with bright pixel catchlight
+        px(6, 6, 2, 3, pal.outline);
+        px(12, 6, 2, 3, pal.outline);
+        px(6, 6, 1, 1, '#ffffff');
+        px(12, 6, 1, 1, '#ffffff');
+      } else if (isBlinking) {
+        px(6, 8, 2, 1, pal.outline);
+        px(12, 8, 2, 1, pal.outline);
+      } else {
+        // Classic mockup crisp 2x2 black square eyes!
+        px(6, 7, 2, 2, pal.outline);
+        px(12, 7, 2, 2, pal.outline);
+      }
+
+      // Mouth: animated open mouth when talking/meowing/eating, else cute 'u' mouth!
+      if (mouthOpen > 0.25 || expr === 'eating') {
+        const openH = mouthOpen > 0.65 ? 2.4 : 1.7;
+        px(9, 8.2, 2, openH, pal.outline);
+        px(9.4, 8.7, 1.2, Math.max(0.7, openH - 0.8), '#eb6c7d'); // cute pink tongue
+      } else if (expr === 'surprised') {
+        px(9.3, 8.5, 1.4, 1.4, pal.outline);
+      } else {
+        // Exact mockup little 'u' mouth centered between eyes
+        px(9, 8, 0.7, 1.2, pal.outline);
+        px(10.3, 8, 0.7, 1.2, pal.outline);
+        px(9.2, 9, 1.6, 0.8, pal.outline);
+      }
+
+      // ---- 5. EQUIPPED ACCESSORIES (Renders seamlessly in ALL rooms!) ----
+      const acc = opts.accessory !== undefined ? opts.accessory : state.accessory;
+      if (acc === 'bow') {
+        // Cute pixel pink ribbon bow perched on left ear
+        px(4, 1, 5, 3, '#09090d');
+        px(4.5, 1.5, 1.5, 2, '#ff77a8');
+        px(7, 1.5, 1.5, 2, '#ff77a8');
+        px(6, 2, 1, 1, '#ffd1e3');
+      } else if (acc === 'shades') {
+        // Cool retro pixel sunglasses
+        px(4, 7, 12, 1, '#09090d');
+        px(5, 7, 4, 2.4, '#111524');
+        px(11, 7, 4, 2.4, '#111524');
+        px(5.5, 7.4, 1, 0.8, '#8be9fd'); // crisp pixel glint
+        px(11.5, 7.4, 1, 0.8, '#8be9fd');
+      } else if (acc === 'crown') {
+        // Golden pixel crown with ruby gem
+        px(7, -1, 6, 4, '#09090d');
+        px(7.5, 0, 1, 2.5, '#ffd43b');
+        px(9.5, -0.5, 1, 3, '#ffd43b');
+        px(11.5, 0, 1, 2.5, '#ffd43b');
+        px(7.5, 1.5, 5, 1, '#f59f00');
+        px(9.5, 1.3, 1, 1, '#ff4d6d'); // ruby gem
+      } else if (acc === 'daisy') {
+        // Meadow daisy flower crown
+        const dxs = [6.5, 9.5, 12.5];
+        dxs.forEach(dx => {
+          px(dx - 0.6, 1.4, 2.2, 2.2, '#ffffff');
+          px(dx, 2, 1, 1, '#f5cf38');
+        });
+      } else if (acc === 'frog') {
+        // Adorable green pixel frog hood on top of head
+        px(4.5, 0, 11, 3.5, '#09090d');
+        px(5, 0.5, 10, 2.5, '#5ec269');
+        // Two cute bumpy frog eyes
+        px(5.5, -1, 2.5, 2, '#09090d');
+        px(12, -1, 2.5, 2, '#09090d');
+        px(6, -0.5, 1.5, 1.2, '#ffffff');
+        px(12.5, -0.5, 1.5, 1.2, '#ffffff');
+        px(6.5, -0.2, 0.7, 0.7, '#09090d');
+        px(13, -0.2, 0.7, 0.7, '#09090d');
+      } else if (acc === 'scarf' && !opts.inBed) {
+        // Cozy red pixel scarf around neck with trailing tail
+        px(5, 11.5, 10, 2.5, '#09090d');
+        px(5.5, 12, 9, 1.5, '#e64553');
+        px(6.5, 12, 1.5, 1.5, '#ff8590');
+        px(11, 13.5, 2.5, 3, '#09090d');
+        px(11.5, 13.5, 1.5, 2.5, '#e64553');
+      }
+
+      // ---- 6. SOAP SUDS OVERLAY (Bathroom scrubbing) ----
+      if (opts.soapBubbles && opts.soapBubbles.length > 0) {
+        opts.soapBubbles.forEach(b => {
+          const bx = Math.round(cx + b.rx * s);
+          const by = Math.round(cy + b.ry * s + hopY);
+          const r = Math.max(2, Math.round(b.r));
+          ctx.fillStyle = '#c5f4ff';
+          ctx.fillRect(bx - r, by - r, r * 2, r * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(bx - r + 1, by - r + 1, Math.max(1, r - 1), Math.max(1, r - 1));
+        });
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. ISOMETRIC PIXEL ART ROOM THUMBNAILS (Hub Cards - Faithful to Mockup 2!)
+    // -------------------------------------------------------------------------
+    const HUB_CARDS = [
+      { id: 'bedroom', label: 'BEDROOM', x: 54, y: 54, w: 66, h: 52, stat: 'energy' },
+      { id: 'bathroom', label: 'BATHROOM', x: 240, y: 54, w: 66, h: 52, stat: 'hygiene' },
+      { id: 'playroom', label: 'PLAYROOM', x: 147, y: 112, w: 66, h: 52, stat: 'fun' },
+      { id: 'kitchen', label: 'KITCHEN', x: 54, y: 170, w: 66, h: 52, stat: 'hunger' },
+      { id: 'closet', label: 'CLOSET', x: 240, y: 170, w: 66, h: 52, stat: null }
+    ];
+
+    // Helper: Draw a pixel-stepped isometric diamond/quad polygon
+    function fillPoly(ctx, pts, fill, stroke = null) {
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.closePath();
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+
+    // Helper: Draw isometric mini-room inside a Hub card centered at (cx, cy)
+    function drawMiniIsoRoom(ctx, id, cx, cy) {
+      const rw = 22; // half-width
+      const rh = 11; // half-height of floor diamond
+      const wallH = 21;
+      const topY = cy - 16;
+
+      // Coordinates of isometric room shell
+      const apex = [cx, topY];
+      const leftTop = [cx - rw, topY + rh];
+      const rightTop = [cx + rw, topY + rh];
+      const midCorner = [cx, topY + wallH];
+      const leftBot = [cx - rw, topY + rh + wallH];
+      const rightBot = [cx + rw, topY + rh + wallH];
+      const frontBot = [cx, topY + rh * 2 + wallH];
+
+      if (id === 'bedroom') {
+        // Exact match to Mockup 2 Bedroom: purple/pink striped walls, pink plank floor, purple bed!
+        fillPoly(ctx, [apex, leftTop, leftBot, midCorner], '#d49af0', '#110d17');
+        fillPoly(ctx, [apex, rightTop, rightBot, midCorner], '#c07fe3', '#110d17');
+        // Vertical wall stripes
+        ctx.fillStyle = '#e5befa';
+        for (let i = 3; i < rw; i += 4) {
+          ctx.fillRect(cx - i, topY + Math.round(i * 0.5) + 1, 1, wallH - 2);
+          ctx.fillRect(cx + i, topY + Math.round(i * 0.5) + 1, 1, wallH - 2);
+        }
+        // Pink wooden floor
+        fillPoly(ctx, [midCorner, rightBot, frontBot, leftBot], '#e8a7cb', '#110d17');
+        // Purple bed against right wall
+        fillPoly(ctx, [[cx + 2, topY + 22], [cx + 14, topY + 28], [cx + 5, topY + 33], [cx - 7, topY + 27]], '#87369e', '#110d17');
+        // Bed pillow + headboard
+        fillPoly(ctx, [[cx + 1, topY + 19], [cx + 12, topY + 25], [cx + 12, topY + 28], [cx + 1, topY + 22]], '#4f2839', '#110d17');
+        fillPoly(ctx, [[cx + 2, topY + 22], [cx + 8, topY + 25], [cx + 5, topY + 27], [cx - 1, topY + 24]], '#f2d4ff', '#110d17');
+      } else if (id === 'bathroom') {
+        // Exact match to Mockup 2 Bathroom: pale blue upper walls, white lower tiles, shower tray, towel shelf, red & yellow bottles, green mat & yellow rubber ducky!
+        fillPoly(ctx, [apex, leftTop, leftBot, midCorner], '#9fd4de', '#110d17');
+        fillPoly(ctx, [apex, rightTop, rightBot, midCorner], '#b8e4eb', '#110d17');
+        // White lower tile wainscot
+        fillPoly(ctx, [[cx, topY + 11], [cx - rw, topY + rh + 11], leftBot, midCorner], '#dce8eb', '#5f7682');
+        fillPoly(ctx, [[cx, topY + 11], [cx + rw, topY + rh + 11], rightBot, midCorner], '#eaf2f5', '#5f7682');
+        // White tiled floor
+        fillPoly(ctx, [midCorner, rightBot, frontBot, leftBot], '#eef6f7', '#110d17');
+        // Wooden shelf + folded blue towels on left wall
+        ctx.fillStyle = '#c47b3b';
+        ctx.fillRect(cx - 19, topY + 13, 9, 3);
+        ctx.fillStyle = '#3c78b8';
+        ctx.fillRect(cx - 18, topY + 9, 7, 4);
+        // Shower head on right wall
+        ctx.fillStyle = '#7c8d99';
+        ctx.fillRect(cx + 8, topY + 8, 5, 2);
+        ctx.fillRect(cx + 12, topY + 10, 2, 10);
+        // White shower tray
+        fillPoly(ctx, [[cx + 3, topY + 22], [cx + 15, topY + 28], [cx + 7, topY + 32], [cx - 5, topY + 26]], '#ffffff', '#2e3a42');
+        // Red & yellow shampoo bottles
+        ctx.fillStyle = '#e03c4a';
+        ctx.fillRect(cx - 5, topY + 21, 3, 5);
+        ctx.fillStyle = '#f5c731';
+        ctx.fillRect(cx - 1, topY + 20, 3, 5);
+        // Green bath mat
+        fillPoly(ctx, [[cx - 13, topY + 28], [cx - 5, topY + 32], [cx - 9, topY + 35], [cx - 17, topY + 31]], '#7dc445', '#1a3813');
+        // Tiny yellow rubber ducky!
+        ctx.fillStyle = '#ffe033';
+        ctx.fillRect(cx - 2, topY + 34, 4, 3);
+        ctx.fillStyle = '#f07422';
+        ctx.fillRect(cx + 2, topY + 35, 1, 1);
+      } else if (id === 'playroom') {
+        // Cozy warm cream/mint walls, wood floor, pastel rug, vintage mic & pink yarn ball
+        fillPoly(ctx, [apex, leftTop, leftBot, midCorner], '#f0dfb4', '#110d17');
+        fillPoly(ctx, [apex, rightTop, rightBot, midCorner], '#e3ce9d', '#110d17');
+        fillPoly(ctx, [midCorner, rightBot, frontBot, leftBot], '#c98e59', '#110d17');
+        // Cozy oval/diamond rug
+        fillPoly(ctx, [[cx, topY + 24], [cx + 12, topY + 30], [cx, topY + 36], [cx - 12, topY + 30]], '#e86f8c', '#822c44');
+        fillPoly(ctx, [[cx, topY + 26], [cx + 8, topY + 30], [cx, topY + 34], [cx - 8, topY + 30]], '#ffd166');
+        // Standing vintage mic
+        ctx.fillStyle = '#2b3242';
+        ctx.fillRect(cx - 1, topY + 17, 2, 12);
+        ctx.fillRect(cx - 4, topY + 28, 8, 2);
+        ctx.fillStyle = '#cfd8e3';
+        ctx.fillRect(cx - 2, topY + 14, 4, 4);
+        // Yarn ball
+        ctx.fillStyle = '#ff6b9d';
+        ctx.fillRect(cx + 8, topY + 28, 5, 5);
+        ctx.fillStyle = '#ffc2d6';
+        ctx.fillRect(cx + 9, topY + 29, 2, 1);
+      } else if (id === 'kitchen') {
+        // Butter-yellow walls, checkered floor, cute mint fridge & fish plate
+        fillPoly(ctx, [apex, leftTop, leftBot, midCorner], '#f7e49e', '#110d17');
+        fillPoly(ctx, [apex, rightTop, rightBot, midCorner], '#ebd383', '#110d17');
+        fillPoly(ctx, [midCorner, rightBot, frontBot, leftBot], '#f5ead6', '#110d17');
+        // Checkered floor accents
+        ctx.fillStyle = '#d97b66';
+        ctx.fillRect(cx - 8, topY + 28, 4, 3);
+        ctx.fillRect(cx, topY + 28, 4, 3);
+        ctx.fillRect(cx - 4, topY + 31, 4, 3);
+        ctx.fillRect(cx + 4, topY + 31, 4, 3);
+        // Cute mint retro fridge on left
+        ctx.fillStyle = '#75d6b8';
+        ctx.fillRect(cx - 15, topY + 10, 9, 16);
+        ctx.strokeStyle = '#110d17';
+        ctx.strokeRect(cx - 15, topY + 10, 9, 16);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 8, topY + 13, 1, 4);
+        // Table & fish plate on right
+        fillPoly(ctx, [[cx + 2, topY + 23], [cx + 13, topY + 28], [cx + 6, topY + 32], [cx - 5, topY + 27]], '#a8693b', '#110d17');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx + 2, topY + 26, 6, 3);
+        ctx.fillStyle = '#5eb6e6';
+        ctx.fillRect(cx + 3, topY + 27, 4, 1);
+      } else if (id === 'closet') {
+        // Boutique rose/lavender walls, wood floor, gold mirror & wardrobe hat stand
+        fillPoly(ctx, [apex, leftTop, leftBot, midCorner], '#e6b8cf', '#110d17');
+        fillPoly(ctx, [apex, rightTop, rightBot, midCorner], '#d49eb9', '#110d17');
+        fillPoly(ctx, [midCorner, rightBot, frontBot, leftBot], '#b87f5a', '#110d17');
+        // Tall gold pixel mirror on left wall
+        ctx.fillStyle = '#f2c14e';
+        ctx.fillRect(cx - 13, topY + 9, 9, 15);
+        ctx.fillStyle = '#b5f0ff';
+        ctx.fillRect(cx - 12, topY + 10, 7, 13);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 11, topY + 12, 2, 5);
+        // Hat stand + cute bow/crown on right
+        ctx.fillStyle = '#6e4028';
+        ctx.fillRect(cx + 7, topY + 13, 2, 15);
+        ctx.fillRect(cx + 4, topY + 27, 8, 2);
+        ctx.fillStyle = '#ffd43b';
+        ctx.fillRect(cx + 5, topY + 10, 6, 4);
+        ctx.fillStyle = '#ff6b9d';
+        ctx.fillRect(cx + 3, topY + 17, 4, 3);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 6. FULL-SCREEN INTERACTIVE ISOMETRIC ROOM SCENES
+    // -------------------------------------------------------------------------
+    function drawFullRoomScene(ctx, roomId, time) {
+      // Base outer meadow border visible behind isometric room frame for cozy continuity
+      ctx.drawImage(meadowCanvas, 0, 0);
+      ctx.fillStyle = 'rgba(11, 28, 20, 0.55)';
+      ctx.fillRect(0, 0, W, H);
+
+      // Isometric Room Geometry (Large cozy cutaway centered on canvas)
+      const cx = W / 2;
+      const topY = 18;
+      const rw = 152;
+      const rh = 58;
+      const wallH = 128;
+
+      const apex = [cx, topY];
+      const leftTop = [cx - rw, topY + rh];
+      const rightTop = [cx + rw, topY + rh];
+      const midCorner = [cx, topY + wallH];
+      const leftBot = [cx - rw, topY + rh + wallH];
+      const rightBot = [cx + rw, topY + rh + wallH];
+      const frontBot = [cx, topY + rh * 2 + wallH];
+
+      if (roomId === 'bedroom') {
+        // Purple/pink striped walls
+        fillPoly(ctx, [apex, leftTop, leftBot, midCorner], '#d49af0', '#120c1a');
+        fillPoly(ctx, [apex, rightTop, rightBot, midCorner], '#be7ee0', '#120c1a');
+
+        // Crisp vertical wallpaper stripes
+        for (let i = 8; i < rw; i += 14) {
+          const yOff = Math.round((i / rw) * rh);
+          ctx.fillStyle = '#e5befa';
+          ctx.fillRect(cx - i, topY + yOff + 2, 5, wallH - 4);
+          ctx.fillStyle = '#d198f0';
+          ctx.fillRect(cx + i - 4, topY + yOff + 2, 5, wallH - 4);
+        }
+
+        // Pink wood-plank isometric floor
+        fillPoly(ctx, [midCorner, rightBot, frontBot, leftBot], '#e8a5c8', '#120c1a');
+        ctx.strokeStyle = '#cf85ad';
+        ctx.lineWidth = 1;
+        for (let p = 1; p < 7; p++) {
+          const t = p / 7;
+          ctx.beginPath();
+          ctx.moveTo(midCorner[0] + (leftBot[0] - midCorner[0]) * t, midCorner[1] + (leftBot[1] - midCorner[1]) * t);
+          ctx.lineTo(rightBot[0] + (frontBot[0] - rightBot[0]) * t, rightBot[1] + (frontBot[1] - rightBot[1]) * t);
+          ctx.stroke();
+        }
+
+        // Cozy Window on Left Wall (Shows sunny sky or starry night!)
+        const winPts = [[cx - 102, 74], [cx - 56, 56], [cx - 56, 108], [cx - 102, 126]];
+        fillPoly(ctx, winPts, state.bedroom.lampOn ? '#9be0ff' : '#1b2247', '#3a2247');
+        if (!state.bedroom.lampOn) {
+          // Twinkling stars & crescent moon
+          ctx.fillStyle = '#fff199';
+          ctx.fillRect(cx - 74, 70, 8, 8);
+          ctx.fillStyle = '#1b2247';
+          ctx.fillRect(cx - 72, 70, 6, 6);
+          if (Math.sin(time * 4) > 0) ctx.fillStyle = '#ffffff', ctx.fillRect(cx - 90, 88, 2, 2);
+          if (Math.cos(time * 3) > 0) ctx.fillStyle = '#ffffff', ctx.fillRect(cx - 66, 94, 2, 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(cx - 84, 104, 2, 2);
+        } else {
+          // Cute fluffy pixel cloud
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(cx - 88, 84, 16, 6);
+          ctx.fillRect(cx - 84, 80, 9, 4);
+        }
+        // Window frame mullions
+        ctx.strokeStyle = '#5c336e';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(cx - 79, 65);
+        ctx.lineTo(cx - 79, 117);
+        ctx.moveTo(cx - 102, 100);
+        ctx.lineTo(cx - 56, 82);
+        ctx.stroke();
+
+        // Nightstand & Clickable Lamp on Left-Center
+        const lampX = 95, lampY = 165;
+        fillPoly(ctx, [[lampX - 18, lampY], [lampX, lampY - 8], [lampX + 18, lampY], [lampX, lampY + 8]], '#7d4469', '#120c1a');
+        ctx.fillStyle = '#613050';
+        ctx.fillRect(lampX - 18, lampY, 36, 22);
+        ctx.strokeStyle = '#120c1a';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(lampX - 18, lampY, 36, 22);
+        // Lamp stand & glowing shade
+        ctx.fillStyle = '#f2c14e';
+        ctx.fillRect(lampX - 2, lampY - 18, 4, 16);
+        fillPoly(ctx, [[lampX - 12, lampY - 16], [lampX - 7, lampY - 30], [lampX + 7, lampY - 30], [lampX + 12, lampY - 16]],
+          state.bedroom.lampOn ? '#fff2a6' : '#574e6b', '#120c1a');
+
+        // Cozy Purple Bed (Right-Center, clickable!)
+        // Wooden Headboard
+        fillPoly(ctx, [[215, 116], [278, 141], [278, 166], [215, 141]], '#5c2d45', '#120c1a');
+        // Mattress base
+        fillPoly(ctx, [[215, 141], [278, 166], [218, 198], [155, 173]], '#f2dcf7', '#120c1a');
+        fillPoly(ctx, [[155, 173], [218, 198], [218, 214], [155, 189]], '#78348c', '#120c1a');
+        fillPoly(ctx, [[218, 198], [278, 166], [278, 182], [218, 214]], '#5e2470', '#120c1a');
+        // Fluffy Pillow
+        fillPoly(ctx, [[216, 142], [255, 158], [238, 168], [199, 152]], '#ffffff', '#3d2247');
+        // Folded Purple Blanket (lower portion when cat isn't sleeping)
+        if (!state.bedroom.sleeping) {
+          fillPoly(ctx, [[192, 154], [255, 179], [218, 198], [155, 173]], '#9a43b5', '#120c1a');
+        }
+
+        // Draw Cat: either tucked under blanket on bed OR standing happily on floor!
+        if (state.bedroom.sleeping) {
+          drawPixelCat(ctx, 218, 162, 2.7, time, { expression: 'sleeping', inBed: true });
+          // Draw Cozy Blanket pulled right over the sleeping kitty!
+          fillPoly(ctx, [[196, 156], [256, 180], [218, 199], [158, 175]], '#9a43b5', '#120c1a');
+          fillPoly(ctx, [[196, 156], [256, 180], [248, 184], [188, 160]], '#d595eb', '#120c1a');
+        } else {
+          drawPixelCat(ctx, 152, 182, 3.1, time, { hopY: state.cat.hopY });
+        }
+
+        // Night-mode ambient overlay + soft lamp glow when lamp is OFF
+        if (!state.bedroom.lampOn) {
+          ctx.fillStyle = 'rgba(18, 14, 46, 0.56)';
+          ctx.fillRect(0, 0, W, H);
+          // Warm nightlight halo around lamp
+          const grad = ctx.createRadialGradient(lampX, lampY - 20, 4, lampX, lampY - 20, 44);
+          grad.addColorStop(0, 'rgba(255, 224, 130, 0.35)');
+          grad.addColorStop(1, 'rgba(255, 224, 130, 0)');
+          ctx.fillStyle = grad;
+          ctx.fillRect(lampX - 45, lampY - 65, 90, 90);
+        }
+      } else if (roomId === 'bathroom') {
+        // Pale blue upper walls, white tiled wainscot & floor (exact match to mockup 2!)
+        fillPoly(ctx, [apex, leftTop, leftBot, midCorner], '#9fd3de', '#121821');
+        fillPoly(ctx, [apex, rightTop, rightBot, midCorner], '#b7e3eb', '#121821');
+
+        // Lower tiled white wall halves
+        fillPoly(ctx, [[cx, topY + 62], [cx - rw, topY + rh + 62], leftBot, midCorner], '#dce8eb', '#5d7480');
+        fillPoly(ctx, [[cx, topY + 62], [cx + rw, topY + rh + 62], rightBot, midCorner], '#ebf4f7', '#5d7480');
+
+        // Tile grid lines on lower walls
+        ctx.strokeStyle = 'rgba(95, 118, 130, 0.35)';
+        ctx.lineWidth = 1;
+        for (let i = 16; i < rw; i += 16) {
+          const yOff = Math.round((i / rw) * rh);
+          ctx.beginPath();
+          ctx.moveTo(cx - i, topY + yOff + 62);
+          ctx.lineTo(cx - i, topY + yOff + wallH);
+          ctx.moveTo(cx + i, topY + yOff + 62);
+          ctx.lineTo(cx + i, topY + yOff + wallH);
+          ctx.stroke();
+        }
+
+        // White checkered bathroom floor
+        fillPoly(ctx, [midCorner, rightBot, frontBot, leftBot], '#f0f7f8', '#121821');
+        ctx.strokeStyle = '#c4d6db';
+        for (let p = 1; p < 7; p++) {
+          const t = p / 7;
+          ctx.beginPath();
+          ctx.moveTo(midCorner[0] + (leftBot[0] - midCorner[0]) * t, midCorner[1] + (leftBot[1] - midCorner[1]) * t);
+          ctx.lineTo(rightBot[0] + (frontBot[0] - rightBot[0]) * t, rightBot[1] + (frontBot[1] - rightBot[1]) * t);
+          ctx.moveTo(midCorner[0] + (rightBot[0] - midCorner[0]) * t, midCorner[1] + (rightBot[1] - midCorner[1]) * t);
+          ctx.lineTo(leftBot[0] + (frontBot[0] - leftBot[0]) * t, leftBot[1] + (frontBot[1] - leftBot[1]) * t);
+          ctx.stroke();
+        }
+
+        // Wooden towel shelf with folded blue towels (Left wall)
+        fillPoly(ctx, [[58, 102], [102, 85], [112, 90], [68, 107]], '#c97e3c', '#121821');
+        ctx.fillStyle = '#3d7cc2';
+        ctx.fillRect(68, 86, 26, 10);
+        ctx.fillStyle = '#5a9be0';
+        ctx.fillRect(70, 82, 22, 6);
+        ctx.strokeStyle = '#121821';
+        ctx.strokeRect(68, 86, 26, 10);
+
+        // Wall hooks
+        ctx.fillStyle = '#c97e3c';
+        ctx.fillRect(118, 72, 22, 10);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(122, 76, 3, 5);
+        ctx.fillRect(132, 76, 3, 5);
+
+        // Raised White Shower Tray (Center)
+        fillPoly(ctx, [[180, 154], [250, 182], [180, 212], [110, 182]], '#ffffff', '#2d3b42');
+        fillPoly(ctx, [[180, 160], [238, 182], [180, 205], [122, 182]], '#e3eff2', '#9fb3bd');
+        // Silver drain
+        ctx.fillStyle = '#6c7c85';
+        ctx.fillRect(177, 181, 6, 4);
+
+        // Red & Yellow Shampoo Bottles next to shower
+        ctx.fillStyle = '#e03c4a';
+        ctx.fillRect(128, 152, 9, 16);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(130, 148, 5, 4);
+        ctx.fillStyle = '#f5c731';
+        ctx.fillRect(141, 148, 9, 18);
+        ctx.fillStyle = '#e07a22';
+        ctx.fillRect(143, 144, 5, 4);
+
+        // Showerhead & Faucet on right wall
+        ctx.fillStyle = '#798b96';
+        ctx.fillRect(236, 70, 4, 86);
+        ctx.fillRect(216, 70, 24, 5);
+        fillPoly(ctx, [[204, 78], [220, 72], [224, 78], [208, 84]], '#b4c6d1', '#121821');
+        // Red & blue tap handles
+        ctx.fillStyle = '#e03c4a';
+        ctx.fillRect(228, 130, 5, 5);
+        ctx.fillStyle = '#3c8ce0';
+        ctx.fillRect(242, 134, 5, 5);
+
+        // Green Bath Mat (Lower left)
+        fillPoly(ctx, [[94, 198], [134, 214], [116, 226], [76, 210]], '#7ec445', '#1d3b15');
+        fillPoly(ctx, [[96, 202], [128, 215], [116, 222], [84, 209]], '#99db60');
+
+        // Clickable Yellow Rubber Ducky!
+        const duckY = 216 - state.bathroom.duckHop;
+        ctx.fillStyle = '#121821';
+        ctx.fillRect(146, duckY - 1, 16, 12);
+        ctx.fillStyle = '#ffe033';
+        ctx.fillRect(147, duckY + 2, 14, 8);
+        ctx.fillRect(153, duckY - 4, 8, 7);
+        ctx.fillStyle = '#f07422'; // beak
+        ctx.fillRect(161, duckY - 1, 4, 3);
+        ctx.fillStyle = '#121821'; // eye
+        ctx.fillRect(158, duckY - 2, 2, 2);
+
+        // Draw Cat right inside the shower tray!
+        drawPixelCat(ctx, 180, 174, 3.1, time, {
+          hopY: state.cat.hopY,
+          soapBubbles: state.bathroom.soapBubbles
+        });
+
+        // Animated Pixel Shower Water Streams!
+        if (state.bathroom.showerOn) {
+          ctx.fillStyle = 'rgba(130, 224, 255, 0.78)';
+          state.bathroom.waterDrops.forEach(d => {
+            ctx.fillRect(Math.round(d.x), Math.round(d.y), 2, 7);
+          });
+        }
+
+        // Draw floating Soap Sponge cursor icon when Sponge tool is active!
+        if (state.bathroom.spongeActive) {
+          const sx = Math.round(state.pointerX - 10);
+          const sy = Math.round(state.pointerY - 8);
+          ctx.fillStyle = '#09090d';
+          ctx.fillRect(sx - 1, sy - 1, 22, 15);
+          ctx.fillStyle = '#ffe066';
+          ctx.fillRect(sx, sy, 20, 13);
+          ctx.fillStyle = '#f0b429';
+          ctx.fillRect(sx + 3, sy + 3, 3, 2);
+          ctx.fillRect(sx + 12, sy + 2, 3, 3);
+          ctx.fillRect(sx + 7, sy + 8, 4, 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(sx + 16, sy - 2, 5, 5);
+        }
+      } else if (roomId === 'playroom') {
+        if (state.playroom.miniGame.active) {
+          drawFishCatchMiniGame(ctx, time);
+          return;
+        }
+        // Warm cream & sage cozy walls
+        fillPoly(ctx, [apex, leftTop, leftBot, midCorner], '#f0dfb4', '#14110e');
+        fillPoly(ctx, [apex, rightTop, rightBot, midCorner], '#e3ce9b', '#14110e');
+        // Warm wooden floor
+        fillPoly(ctx, [midCorner, rightBot, frontBot, leftBot], '#c98e59', '#14110e');
+
+        // Cute Fish Poster on Left Wall
+        fillPoly(ctx, [[82, 88], [122, 73], [122, 114], [82, 129]], '#ffffff', '#2e221b');
+        fillPoly(ctx, [[86, 92], [118, 79], [118, 108], [86, 121]], '#87d8f7');
+        ctx.fillStyle = '#ff8c66';
+        ctx.fillRect(96, 98, 12, 6);
+        ctx.fillRect(108, 96, 4, 10);
+
+        // Cozy Bookshelf / Toy Cabinet on Right Wall
+        fillPoly(ctx, [[222, 82], [268, 100], [268, 146], [222, 128]], '#8c5330', '#14110e');
+        ctx.fillStyle = '#e86f8c';
+        ctx.fillRect(230, 96, 8, 12);
+        ctx.fillStyle = '#5ec269';
+        ctx.fillRect(240, 100, 8, 12);
+        ctx.fillStyle = '#5eb6e6';
+        ctx.fillRect(250, 104, 8, 12);
+
+        // Woven Pastel Rug
+        fillPoly(ctx, [[180, 160], [258, 192], [180, 224], [102, 192]], '#e86f8c', '#7a253d');
+        fillPoly(ctx, [[180, 168], [240, 192], [180, 216], [120, 192]], '#ffd166');
+        fillPoly(ctx, [[180, 176], [220, 192], [180, 208], [140, 192]], '#fff3d6');
+
+        // Vintage Talking Microphone Stand (Left of Cat)
+        const mx = 114, my = 186;
+        ctx.fillStyle = '#1f2433';
+        ctx.fillRect(mx - 10, my + 8, 20, 5);
+        ctx.fillRect(mx - 2, my - 30, 4, 40);
+        // Mic Head (pulses red/cyan when recording or mimicking!)
+        const micGlow = state.playroom.recording ? '#ff5468' : (state.playroom.mimicking ? '#52e0c4' : '#cfd8e3');
+        ctx.fillStyle = '#111521';
+        ctx.fillRect(mx - 7, my - 43, 14, 15);
+        ctx.fillStyle = micGlow;
+        ctx.fillRect(mx - 5, my - 41, 10, 11);
+        ctx.fillStyle = '#4c576e';
+        ctx.fillRect(mx - 5, my - 37, 10, 2);
+        ctx.fillRect(mx - 5, my - 33, 10, 2);
+
+        // Live Pixel Volume Bar next to Mic when Recording or Mimicking!
+        if (state.playroom.recording || state.playroom.mimicking) {
+          const lvl = state.playroom.recording ? state.playroom.micLevel : state.playroom.audioAmp;
+          const bars = 6;
+          for (let i = 0; i < bars; i++) {
+            const active = lvl > (i / bars) * 0.85;
+            ctx.fillStyle = active ? (state.playroom.recording ? '#ff5468' : '#52e0c4') : 'rgba(20,25,40,0.5)';
+            ctx.fillRect(mx - 22, my - 10 - i * 6, 8, 4);
+          }
+        }
+
+        // Draw Cat on the cozy rug!
+        drawPixelCat(ctx, 180, 178, 3.2, time, { hopY: state.cat.hopY });
+
+        // Bouncy Pixel Yarn Ball Toy!
+        const y = state.playroom.yarn;
+        const yx = Math.round(y.x), yy = Math.round(y.y);
+        // Trailing yarn thread
+        ctx.strokeStyle = '#ff6b9d';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(yx, yy + 6);
+        ctx.quadraticCurveTo(yx + 14, yy + 14, yx + 22, yy + 8);
+        ctx.stroke();
+        // Ball body
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(yx - 8, yy - 8, 16, 16);
+        ctx.fillStyle = '#ff6b9d';
+        ctx.fillRect(yx - 6, yy - 6, 12, 12);
+        ctx.fillStyle = '#ff9ec0';
+        ctx.fillRect(yx - 4, yy - 4, 6, 3);
+        ctx.fillStyle = '#c43b6b';
+        ctx.fillRect(yx - 4, yy + 1, 8, 2);
+      } else if (roomId === 'kitchen') {
+        // Sunny butter-yellow walls
+        fillPoly(ctx, [apex, leftTop, leftBot, midCorner], '#f7e49e', '#1a140e');
+        fillPoly(ctx, [apex, rightTop, rightBot, midCorner], '#ebd17f', '#1a140e');
+
+        // Checkered Coral & Cream Kitchen Floor
+        fillPoly(ctx, [midCorner, rightBot, frontBot, leftBot], '#f7eedc', '#1a140e');
+        const cells = 6;
+        for (let r = 0; r < cells; r++) {
+          for (let c = 0; c < cells; c++) {
+            if ((r + c) % 2 === 0) {
+              const p0 = isoLerp(midCorner, leftBot, rightBot, frontBot, r / cells, c / cells);
+              const p1 = isoLerp(midCorner, leftBot, rightBot, frontBot, (r + 1) / cells, c / cells);
+              const p2 = isoLerp(midCorner, leftBot, rightBot, frontBot, (r + 1) / cells, (c + 1) / cells);
+              const p3 = isoLerp(midCorner, leftBot, rightBot, frontBot, r / cells, (c + 1) / cells);
+              fillPoly(ctx, [p0, p1, p2, p3], '#e38f7b');
+            }
+          }
+        }
+
+        // Cute Mint Retro Fridge (Left)
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(70, 96, 46, 86);
+        ctx.fillStyle = '#78dbb9';
+        ctx.fillRect(73, 99, 40, 80);
+        ctx.fillStyle = '#5bc2a0';
+        ctx.fillRect(73, 132, 40, 3);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(104, 110, 4, 14);
+        ctx.fillRect(104, 144, 4, 18);
+        // Cute magnet heart on fridge
+        ctx.fillStyle = '#ff6b9d';
+        ctx.fillRect(83, 114, 6, 5);
+
+        // Wooden Counter & Meadow Window (Right)
+        fillPoly(ctx, [[215, 74], [262, 92], [262, 130], [215, 112]], '#9be0ff', '#5e3c23');
+        ctx.fillStyle = '#52a362';
+        ctx.fillRect(222, 108, 34, 10);
+        fillPoly(ctx, [[210, 132], [282, 160], [252, 174], [180, 146]], '#b87644', '#1a140e');
+        fillPoly(ctx, [[180, 146], [252, 174], [252, 200], [180, 172]], '#8c532a', '#1a140e');
+
+        // Pet Bowl on Floor
+        fillPoly(ctx, [[156, 208], [180, 218], [164, 226], [140, 216]], '#ff77a8', '#1a140e');
+        fillPoly(ctx, [[156, 211], [174, 218], [164, 223], [146, 216]], '#fff3d6');
+
+        // Draw Cat waiting eagerly for snacks!
+        drawPixelCat(ctx, 178, 174, 3.2, time, { hopY: state.cat.hopY });
+
+        // Draw Flying Tossed Food Animation!
+        if (state.kitchen.flyingFood) {
+          const ff = state.kitchen.flyingFood;
+          drawPixelFoodSprite(ctx, ff.id, Math.round(ff.x), Math.round(ff.y));
+        }
+      } else if (roomId === 'closet') {
+        // Boutique Lilac/Rose Walls + Polished Hardwood Floor
+        fillPoly(ctx, [apex, leftTop, leftBot, midCorner], '#e8bad1', '#1a0e18');
+        fillPoly(ctx, [apex, rightTop, rightBot, midCorner], '#d49eb9', '#1a0e18');
+        fillPoly(ctx, [midCorner, rightBot, frontBot, leftBot], '#b87f5a', '#1a0e18');
+
+        // Plush Pink Runway Carpet
+        fillPoly(ctx, [[180, 164], [244, 190], [180, 218], [116, 190]], '#f59bc0', '#87385a');
+
+        // Tall Golden Full-Length Mirror (Left Wall)
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(82, 82, 42, 88);
+        ctx.fillStyle = '#f2c14e';
+        ctx.fillRect(85, 85, 36, 82);
+        ctx.fillStyle = '#c4f2ff';
+        ctx.fillRect(90, 90, 26, 72);
+        // Diagonal mirror sparkle glint
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(94, 98, 6, 16);
+        ctx.fillRect(102, 118, 4, 12);
+
+        // Wooden Boutique Hat Stand & Accessory Shelf (Right Wall)
+        fillPoly(ctx, [[226, 94], [278, 114], [278, 122], [226, 102]], '#7d4b2d', '#1a0e18');
+        // Tiny pixel crown & bow displayed on boutique shelf
+        ctx.fillStyle = '#ffd43b';
+        ctx.fillRect(236, 88, 10, 8);
+        ctx.fillStyle = '#ff6b9d';
+        ctx.fillRect(256, 98, 10, 7);
+
+        // Coat / Hat Rack
+        ctx.fillStyle = '#5c341d';
+        ctx.fillRect(254, 128, 6, 56);
+        ctx.fillRect(244, 182, 26, 5);
+        ctx.fillStyle = '#5ec269';
+        ctx.fillRect(249, 122, 16, 8);
+
+        // Draw Cat modeling current Fur & Accessory!
+        drawPixelCat(ctx, 180, 174, 3.4, time, { hopY: state.cat.hopY });
+      }
+    }
+
+    // Helper for isometric floor interpolation
+    function isoLerp(a, b, c, d, u, v) {
+      const topX = a[0] + (b[0] - a[0]) * u;
+      const topY = a[1] + (b[1] - a[1]) * u;
+      const botX = c[0] + (d[0] - c[0]) * u;
+      const botY = c[1] + (d[1] - c[1]) * u;
+      return [topX + (botX - topX) * v, topY + (botY - topY) * v];
+    }
+
+    // Tiny crisp pixel food sprites for Kitchen toss & Fish Catch mini-game
+    function drawPixelFoodSprite(ctx, id, x, y) {
+      if (id === 'fish') {
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(x - 8, y - 4, 16, 9);
+        ctx.fillStyle = '#6ec8f5';
+        ctx.fillRect(x - 6, y - 3, 10, 7);
+        ctx.fillRect(x + 4, y - 4, 3, 9);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x - 4, y - 1, 2, 2);
+      } else if (id === 'milk') {
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(x - 5, y - 8, 10, 16);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x - 4, y - 6, 8, 13);
+        ctx.fillStyle = '#6ec8f5';
+        ctx.fillRect(x - 4, y - 1, 8, 4);
+      } else if (id === 'boba') {
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(x - 6, y - 8, 12, 16);
+        ctx.fillStyle = '#e8c499';
+        ctx.fillRect(x - 5, y - 5, 10, 12);
+        ctx.fillStyle = '#261a14'; // tapioca pearls
+        ctx.fillRect(x - 3, y + 3, 2, 2);
+        ctx.fillRect(x + 1, y + 3, 2, 2);
+        ctx.fillRect(x - 1, y + 1, 2, 2);
+        ctx.fillStyle = '#ff6b9d'; // straw
+        ctx.fillRect(x - 1, y - 11, 2, 7);
+      } else if (id === 'sushi') {
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(x - 7, y - 5, 14, 10);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x - 6, y - 1, 12, 5);
+        ctx.fillStyle = '#ff7b54';
+        ctx.fillRect(x - 6, y - 4, 12, 4);
+        ctx.fillStyle = '#1f2b22';
+        ctx.fillRect(x - 2, y - 4, 4, 8);
+      } else if (id === 'cake') {
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(x - 7, y - 6, 14, 12);
+        ctx.fillStyle = '#ffe5b4';
+        ctx.fillRect(x - 6, y - 1, 12, 6);
+        ctx.fillStyle = '#ff85b3';
+        ctx.fillRect(x - 6, y - 4, 12, 4);
+        ctx.fillStyle = '#e63946'; // strawberry
+        ctx.fillRect(x - 2, y - 7, 4, 4);
+      } else if (id === 'star') {
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(x - 6, y - 6, 12, 12);
+        ctx.fillStyle = '#ffd43b';
+        ctx.fillRect(x - 2, y - 6, 4, 12);
+        ctx.fillRect(x - 6, y - 2, 12, 4);
+        ctx.fillStyle = '#fff3b0';
+        ctx.fillRect(x - 2, y - 2, 4, 4);
+      } else if (id === 'heart') {
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(x - 6, y - 5, 12, 10);
+        ctx.fillStyle = '#ff5e8e';
+        ctx.fillRect(x - 5, y - 4, 4, 4);
+        ctx.fillRect(x + 1, y - 4, 4, 4);
+        ctx.fillRect(x - 4, y, 8, 3);
+        ctx.fillRect(x - 2, y + 3, 4, 2);
+      } else if (id === 'boot') {
+        ctx.fillStyle = '#09090d';
+        ctx.fillRect(x - 6, y - 7, 12, 14);
+        ctx.fillStyle = '#6b4c3b';
+        ctx.fillRect(x - 4, y - 6, 6, 10);
+        ctx.fillRect(x - 4, y + 1, 9, 5);
+        ctx.fillStyle = '#4a3327';
+        ctx.fillRect(x - 4, y + 4, 9, 2);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 7. FISH CATCH ARCADE MINI-GAME (Inside Playroom)
+    // -------------------------------------------------------------------------
+    function drawFishCatchMiniGame(ctx, time) {
+      const mg = state.playroom.miniGame;
+      // Cozy bright meadow sky backdrop
+      ctx.fillStyle = '#7bc8e8';
+      ctx.fillRect(0, 0, W, H);
+      // Pixel clouds
+      ctx.fillStyle = '#ffffff';
+      const c1 = (time * 12) % (W + 60) - 40;
+      ctx.fillRect(Math.round(c1), 36, 36, 10);
+      ctx.fillRect(Math.round(c1) + 8, 28, 20, 8);
+      const c2 = ((time * 8 + 180) % (W + 60)) - 40;
+      ctx.fillRect(Math.round(c2), 62, 44, 10);
+      ctx.fillRect(Math.round(c2) + 10, 54, 22, 8);
+
+      // Rolling forest-green grass floor matching game palette
+      ctx.fillStyle = '#2f6e4e';
+      ctx.fillRect(0, 214, W, 12);
+      ctx.fillStyle = '#1f4d36';
+      ctx.fillRect(0, 224, W, 46);
+      // Little grass tufts & daisies along bottom
+      ctx.fillStyle = '#73bd77';
+      for (let gx = 12; gx < W; gx += 34) {
+        ctx.fillRect(gx, 220, 6, 3);
+        ctx.fillRect(gx + 2, 218, 2, 2);
+      }
+
+      // Falling items
+      mg.items.forEach(it => {
+        drawPixelFoodSprite(ctx, it.type, Math.round(it.x), Math.round(it.y));
+      });
+
+      // Player's customized Cat catching snacks!
+      drawPixelCat(ctx, mg.catX, 214, 2.5, time, { hopY: state.cat.hopY });
+
+      // Crisp Top Mini-Game HUD Overlay
+      ctx.fillStyle = 'rgba(18, 24, 46, 0.85)';
+      ctx.fillRect(10, 10, W - 20, 24);
+      ctx.strokeStyle = '#090c17';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(10, 10, W - 20, 24);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '8px "Press Start 2P", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`SCORE:${mg.score}`, 18, 26);
+      ctx.fillStyle = '#ffd43b';
+      ctx.textAlign = 'center';
+      ctx.fillText(`TIME:${Math.ceil(mg.timeLeft)}s`, W / 2, 26);
+      ctx.fillStyle = '#ff9ec0';
+      ctx.textAlign = 'right';
+      ctx.fillText(`BEST:${state.highScore}`, W - 18, 26);
+
+      // End-of-round Summary Box
+      if (mg.gameOver) {
+        ctx.fillStyle = 'rgba(15, 22, 42, 0.92)';
+        ctx.fillRect(68, 72, 224, 118);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(68, 72, 224, 118);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffd43b';
+        ctx.font = '11px "Press Start 2P", monospace';
+        ctx.fillText('TIME UP!', W / 2, 102);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '8px "Press Start 2P", monospace';
+        ctx.fillText(`SCORE: ${mg.score}`, W / 2, 128);
+        ctx.fillStyle = '#75f0a8';
+        ctx.fillText(`+${mg.coinsEarned} COINS EARNED!`, W / 2, 148);
+        ctx.fillStyle = '#ffb3cc';
+        ctx.fillText('USE BUTTONS BELOW', W / 2, 172);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 8. TITLE SCREEN & HUB SCREEN RENDERERS (Matches Mockups 1 & 2!)
+    // -------------------------------------------------------------------------
+    const PLAY_BTN_RECT = { x: 132, y: 190, w: 96, h: 30 };
+
+    function drawTitleScreen(ctx, time) {
+      // Exact Meadow Background
+      ctx.drawImage(meadowCanvas, 0, 0);
+
+      // Subtle floating pixel title sparkle above cat
+      ctx.textAlign = 'center';
+      ctx.font = '8px "Press Start 2P", monospace';
+      ctx.fillStyle = 'rgba(10, 28, 19, 0.7)';
+      ctx.fillText(`~ ${state.petName} ~`, W / 2 + 1, 56 + 1);
+      ctx.fillStyle = '#d4f5dc';
+      ctx.fillText(`~ ${state.petName} ~`, W / 2, 56);
+
+      // Center Pixel Cat (Exact Mockup 1 placement & chunky scale!)
+      drawPixelCat(ctx, W / 2, 134, 4.0, time, { hopY: state.cat.hopY });
+
+      // Chunky Pixelated Slate-Blue PLAY Button (Exact Mockup 1 style!)
+      const b = PLAY_BTN_RECT;
+      const hoverLift = state.hoveredPlayBtn ? -2 : 0;
+      const bx = b.x, by = b.y + hoverLift, bw = b.w, bh = b.h;
+
+      // Stepped pixel black outline
+      ctx.fillStyle = '#09090d';
+      ctx.fillRect(bx + 4, by, bw - 8, bh);
+      ctx.fillRect(bx + 2, by + 2, bw - 4, bh - 4);
+      ctx.fillRect(bx, by + 5, bw, bh - 10);
+
+      // Button lower bevel shadow
+      ctx.fillStyle = '#383f6b';
+      ctx.fillRect(bx + 4, by + 4, bw - 8, bh - 7);
+      ctx.fillRect(bx + 2, by + 6, bw - 4, bh - 11);
+
+      // Button main slate-blue fill
+      ctx.fillStyle = state.hoveredPlayBtn ? '#616cad' : '#525c94';
+      ctx.fillRect(bx + 4, by + 3, bw - 8, bh - 10);
+      ctx.fillRect(bx + 2, by + 5, bw - 4, bh - 13);
+
+      // Left pixel glint highlights matching Mockup 1!
+      ctx.fillStyle = '#7b87c4';
+      ctx.fillRect(bx + 5, by + 5, 6, 3);
+      ctx.fillRect(bx + 4, by + 10, 3, 4);
+      ctx.fillRect(bx + 14, by + 4, 4, 2);
+
+      // Crisp white pixel PLAY label
+      ctx.fillStyle = '#252b4a';
+      ctx.font = '12px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('PLAY', bx + bw / 2 + 1, by + 21 + 1);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('PLAY', bx + bw / 2, by + 21);
+    }
+
+    function drawHubScreen(ctx, time) {
+      // Exact same forest-green meadow background (Mockup 2!)
+      ctx.drawImage(meadowCanvas, 0, 0);
+
+      HUB_CARDS.forEach(card => {
+        const isHover = state.hoveredRoom === card.id;
+        const bounce = isHover ? Math.sin(time * 10) * 1.5 - 2 : 0;
+        const cx = card.x;
+        const cy = card.y + bounce;
+
+        // Soft drop shadow beneath navy card
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
+        drawRoundedRect(ctx, cx + 2, card.y + 4, card.w, card.h, 8);
+        ctx.fill();
+
+        // Dark Navy / Slate-Blue Rounded-Square Room Card (#2a3356)
+        ctx.fillStyle = isHover ? '#36416e' : '#2a3356';
+        drawRoundedRect(ctx, cx, cy, card.w, card.h, 8);
+        ctx.fill();
+
+        if (isHover) {
+          ctx.strokeStyle = '#fff1a6';
+          ctx.lineWidth = 2;
+          drawRoundedRect(ctx, cx, cy, card.w, card.h, 8);
+          ctx.stroke();
+        }
+
+        // Isometric Pixel Room Thumbnail inside card!
+        drawMiniIsoRoom(ctx, card.id, cx + card.w / 2, cy + card.h / 2 + 1);
+
+        // Cream Rounded Pill Label Underneath (Exact Mockup 2 style!)
+        const pw = 58;
+        const ph = 13;
+        const px = cx + (card.w - pw) / 2;
+        const py = cy + card.h - 2;
+
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        drawRoundedRect(ctx, px, py + 2, pw, ph, 4);
+        ctx.fill();
+
+        ctx.fillStyle = isHover ? '#ffffff' : '#f4efe6';
+        drawRoundedRect(ctx, px, py, pw, ph, 4);
+        ctx.fill();
+
+        ctx.fillStyle = '#9c3838'; // reddish-brown pixel text matching Mockup 2's BEDROOM tag!
+        ctx.font = '5.5px "Press Start 2P", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(card.label, cx + card.w / 2, py + 9);
+
+        // Low-need alert indicator dot!
+        if (card.stat && state.stats[card.stat] < 38) {
+          const pulse = Math.sin(time * 8) > 0;
+          ctx.fillStyle = '#09090d';
+          ctx.fillRect(cx + card.w - 11, cy + 3, 9, 9);
+          ctx.fillStyle = pulse ? '#ff4d6d' : '#ff99ac';
+          ctx.fillRect(cx + card.w - 10, cy + 4, 7, 7);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(cx + card.w - 7, cy + 5, 1, 3);
+          ctx.fillRect(cx + card.w - 7, cy + 9, 1, 1);
+        }
+      });
+    }
+
+    function drawRoundedRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    // -------------------------------------------------------------------------
+    // 9. PIXEL PARTICLES & SPEECH BUBBLE OVERLAYS
+    // -------------------------------------------------------------------------
+    function spawnParticles(type, x, y, count = 5) {
+      for (let i = 0; i < count; i++) {
+        state.particles.push({
+          type,
+          x: x + (Math.random() - 0.5) * 26,
+          y: y + (Math.random() - 0.5) * 14,
+          vx: (Math.random() - 0.5) * 24,
+          vy: -18 - Math.random() * 24,
+          life: 0.9 + Math.random() * 0.5,
+          maxLife: 1.4
+        });
+      }
+    }
+
+    function drawParticles(ctx) {
+      state.particles.forEach(p => {
+        const x = Math.round(p.x), y = Math.round(p.y);
+        ctx.globalAlpha = Math.max(0, Math.min(1, p.life / 0.6));
+        if (p.type === 'heart') {
+          ctx.fillStyle = '#ff5e8e';
+          ctx.fillRect(x - 3, y - 2, 2, 2);
+          ctx.fillRect(x + 1, y - 2, 2, 2);
+          ctx.fillRect(x - 2, y, 4, 2);
+          ctx.fillRect(x - 1, y + 2, 2, 1);
+        } else if (p.type === 'sparkle') {
+          ctx.fillStyle = '#fff280';
+          ctx.fillRect(x, y - 3, 1, 7);
+          ctx.fillRect(x - 3, y, 7, 1);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x, y, 1, 1);
+        } else if (p.type === 'zzz') {
+          ctx.fillStyle = '#d9b8ff';
+          ctx.font = '7px "Press Start 2P", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('Z', x, y);
+        } else if (p.type === 'bubble') {
+          ctx.fillStyle = '#b3f0ff';
+          ctx.fillRect(x - 2, y - 2, 5, 5);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x - 1, y - 1, 2, 2);
+        } else if (p.type === 'crumb') {
+          ctx.fillStyle = '#f2c166';
+          ctx.fillRect(x, y, 3, 3);
+        } else if (p.type === 'note') {
+          ctx.fillStyle = '#ffe082';
+          ctx.fillRect(x, y, 3, 3);
+          ctx.fillRect(x + 2, y - 5, 1, 6);
+          ctx.fillRect(x + 2, y - 5, 3, 2);
+        }
+        ctx.globalAlpha = 1;
+      });
+    }
+
+    function drawSpeechBubble(ctx) {
+      if (state.cat.speechTimer <= 0 || !state.cat.speechText) return;
+      if (state.screen === 'hub' || state.playroom.miniGame.active) return;
+
+      const text = state.cat.speechText;
+      ctx.font = '6.5px "Press Start 2P", monospace';
+      const tw = Math.max(46, ctx.measureText(text).width + 14);
+      const bx = Math.max(12, Math.min(W - tw - 12, Math.round(getCatCenter().x - tw / 2)));
+      const by = Math.max(12, Math.round(getCatCenter().y - 68));
+
+      ctx.fillStyle = '#09090d';
+      drawRoundedRect(ctx, bx - 2, by - 2, tw + 4, 22, 5);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      drawRoundedRect(ctx, bx, by, tw, 18, 4);
+      ctx.fill();
+      // Little bubble pointer tail
+      ctx.fillStyle = '#09090d';
+      ctx.fillRect(bx + tw / 2 - 3, by + 18, 6, 4);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(bx + tw / 2 - 2, by + 17, 4, 3);
+
+      ctx.fillStyle = '#2a3356';
+      ctx.textAlign = 'center';
+      ctx.fillText(text, bx + tw / 2, by + 12);
+    }
+
+    // -------------------------------------------------------------------------
+    // 10. INTERACTIONS & GAMEPLAY ACTIONS
+    // -------------------------------------------------------------------------
+    function getCatCenter() {
+      if (state.screen === 'title') return { x: W / 2, y: 134, r: 42 };
+      if (state.screen === 'bedroom') {
+        return state.bedroom.sleeping
+          ? { x: 218, y: 162, r: 34 }
+          : { x: 152, y: 182, r: 34 };
+      }
+      if (state.screen === 'bathroom') return { x: 180, y: 174, r: 34 };
+      if (state.screen === 'playroom') return { x: 180, y: 178, r: 36 };
+      if (state.screen === 'kitchen') return { x: 178, y: 174, r: 36 };
+      if (state.screen === 'closet') return { x: 180, y: 174, r: 38 };
+      return { x: W / 2, y: 160, r: 34 };
+    }
+
+    function addStat(key, delta) {
+      state.stats[key] = Math.max(0, Math.min(100, state.stats[key] + delta));
+      updateHUD();
+    }
+
+    function addCoins(amount) {
+      state.coins = Math.max(0, state.coins + amount);
+      if (amount > 0) audio.playCoin();
+      updateHUD();
+      saveState();
+    }
+
+    const SWEET_LINES = ['PURR~ <3', 'I <3 U!', 'SO COZY!', 'NYAA~', 'BESTIES!', 'HEHE!'];
+    const MEOW_LINES = ['MEOW!', 'MEW MEW~', 'FISH PLS!', 'LOVE U!', 'PRRR~'];
+
+    function petCat(x, y) {
+      if (state.bedroom.sleeping && state.screen === 'bedroom') {
+        spawnParticles('heart', x, y - 12, 2);
+        audio.playPurr();
+        return;
+      }
+      state.cat.expression = 'happy';
+      state.cat.exprTimer = 1.4;
+      addStat('fun', 3);
+      spawnParticles('heart', x, y - 14, 3);
+      if (state.cat.purrCooldown <= 0) {
+        audio.playPurr();
+        state.cat.purrCooldown = 0.65;
+        state.cat.speechText = SWEET_LINES[Math.floor(Math.random() * SWEET_LINES.length)];
+        state.cat.speechTimer = 1.8;
+        if (Math.random() < 0.25) addCoins(1);
+      }
+    }
+
+    function boopCat() {
+      if (state.bedroom.sleeping && state.screen === 'bedroom') {
+        toggleSleep();
+        return;
+      }
+      state.cat.expression = 'surprised';
+      state.cat.exprTimer = 0.85;
+      state.cat.hopVy = -115;
+      audio.playBoop();
+      const c = getCatCenter();
+      spawnParticles('sparkle', c.x, c.y - 24, 4);
+      state.cat.speechText = 'BOOP!';
+      state.cat.speechTimer = 1.2;
+      addStat('fun', 2);
+    }
+
+    function triggerSyntheticMeow() {
+      const v = Math.floor(Math.random() * 4);
+      audio.playMeow(v);
+      state.cat.expression = 'talking';
+      state.cat.exprTimer = 0.65;
+      state.cat.mouthOpen = 0.9;
+      state.cat.hopVy = -60;
+      state.cat.speechText = MEOW_LINES[Math.floor(Math.random() * MEOW_LINES.length)];
+      state.cat.speechTimer = 1.8;
+      const c = getCatCenter();
+      spawnParticles('note', c.x + 14, c.y - 24, 3);
+      addStat('fun', 5);
+    }
+
+    function tossYarnBall() {
+      audio.playBoop();
+      const y = state.playroom.yarn;
+      y.x = 180 + (Math.random() > 0.5 ? 70 : -70);
+      y.y = 140;
+      y.vx = (180 - y.x) * 1.4 + (Math.random() - 0.5) * 40;
+      y.vy = -120;
+      y.active = true;
+      state.cat.expression = 'happy';
+      state.cat.exprTimer = 1.2;
+      state.cat.hopVy = -95;
+      state.cat.speechText = 'YARN!!';
+      state.cat.speechTimer = 1.4;
+      addStat('fun', 8);
+      if (Math.random() < 0.4) addCoins(1);
+    }
+
+    function toggleLamp() {
+      state.bedroom.lampOn = !state.bedroom.lampOn;
+      audio.playClick();
+      updateActionDeck();
+    }
+
+    function toggleSleep() {
+      state.bedroom.sleeping = !state.bedroom.sleeping;
+      audio.playClick();
+      if (state.bedroom.sleeping) {
+        state.bedroom.lampOn = false;
+        state.cat.speechText = 'NIGHT NIGHT~';
+        state.cat.speechTimer = 2.0;
+      } else {
+        state.bedroom.lampOn = true;
+        state.cat.expression = 'happy';
+        state.cat.exprTimer = 1.2;
+        state.cat.speechText = 'GOOD MORNING!';
+        state.cat.speechTimer = 1.8;
+      }
+      updateActionDeck();
+    }
+
+    function toggleSponge() {
+      state.bathroom.spongeActive = !state.bathroom.spongeActive;
+      if (state.bathroom.spongeActive && state.bathroom.showerOn) {
+        state.bathroom.showerOn = false;
+        audio.setShowerSound(false);
+      }
+      audio.playClick();
+      updateActionDeck();
+    }
+
+    function toggleShower() {
+      state.bathroom.showerOn = !state.bathroom.showerOn;
+      if (state.bathroom.showerOn) {
+        state.bathroom.spongeActive = false;
+        audio.setShowerSound(true);
+      } else {
+        audio.setShowerSound(false);
+      }
+      audio.playClick();
+      updateActionDeck();
+    }
+
+    function squeakDuck() {
+      audio.playDuckSqueak();
+      state.bathroom.duckHop = 12;
+      spawnParticles('bubble', 154, 212, 3);
+      addStat('fun', 2);
+    }
+
+    function feedFood(foodId) {
+      const food = FOODS.find(f => f.id === foodId);
+      if (!food) return;
+      if (state.kitchen.flyingFood) return;
+      if (state.coins < food.cost) {
+        showToast(`Need ${food.cost} coins! Play Fish Catch!`);
+        audio.playClick();
+        return;
+      }
+      if (food.cost > 0) {
+        state.coins -= food.cost;
+        updateHUD();
+      }
+      audio.playBoop();
+      state.kitchen.flyingFood = {
+        id: food.id,
+        sx: 180,
+        sy: 255,
+        x: 180,
+        y: 255,
+        t: 0,
+        food
+      };
+    }
+
+    function selectAccessory(accId) {
+      const acc = ACCESSORIES.find(a => a.id === accId);
+      if (!acc) return;
+      if (state.ownedAccessories.includes(accId)) {
+        state.accessory = accId;
+        audio.playClick();
+        state.cat.hopVy = -70;
+        state.cat.expression = 'happy';
+        state.cat.exprTimer = 1.0;
+        spawnParticles('sparkle', 180, 154, 6);
+        saveState();
+        updateActionDeck();
+      } else {
+        if (state.coins < acc.cost) {
+          showToast(`Need ${acc.cost} coins! Play Fish Catch!`);
+          audio.playClick();
+          return;
+        }
+        state.coins -= acc.cost;
+        state.ownedAccessories.push(accId);
+        state.accessory = accId;
+        audio.playCoin();
+        state.cat.hopVy = -90;
+        state.cat.expression = 'happy';
+        state.cat.exprTimer = 1.4;
+        state.cat.speechText = 'SO STYLISH!';
+        state.cat.speechTimer = 1.8;
+        spawnParticles('sparkle', 180, 154, 8);
+        updateHUD();
+        saveState();
+        updateActionDeck();
+      }
+    }
+
+    function selectFur(furId) {
+      if (!FUR_PALETTES[furId]) return;
+      state.fur = furId;
+      audio.playClick();
+      state.cat.hopVy = -60;
+      spawnParticles('sparkle', 180, 168, 6);
+      saveState();
+      updateActionDeck();
+    }
+
+    function startFishCatch() {
+      const mg = state.playroom.miniGame;
+      mg.active = true;
+      mg.score = 0;
+      mg.coinsEarned = 0;
+      mg.timeLeft = 30;
+      mg.catX = W / 2;
+      mg.targetX = W / 2;
+      mg.items = [];
+      mg.spawnTimer = 0.3;
+      mg.gameOver = false;
+      audio.playStartChime();
+      updateActionDeck();
+    }
+
+    function exitFishCatch() {
+      state.playroom.miniGame.active = false;
+      audio.playClick();
+      updateActionDeck();
+    }
+
+    // -------------------------------------------------------------------------
+    // 11. SCREEN NAVIGATION & CONTEXTUAL ACTION DECK UI
+    // -------------------------------------------------------------------------
+    const hudBar = document.getElementById('hudBar');
+    const actionDeck = document.getElementById('actionDeck');
+
+    function goToScreen(next) {
+      // Clean up room-specific loops/sounds when leaving
+      if (state.bathroom.showerOn) {
+        state.bathroom.showerOn = false;
+        audio.setShowerSound(false);
+      }
+      if (state.playroom.recording) audio.stopRecording();
+      state.playroom.miniGame.active = false;
+      state.bathroom.spongeActive = false;
+
+      state.screen = next;
+      state.hoveredRoom = null;
+      state.cat.speechTimer = 0;
+      state.cat.expression = 'idle';
+
+      if (next === 'title') {
+        hudBar.classList.add('hidden');
+        hudBar.classList.remove('flex');
+        actionDeck.classList.add('hidden');
+      } else {
+        hudBar.classList.remove('hidden');
+        hudBar.classList.add('flex');
+        actionDeck.classList.remove('hidden');
+      }
+
+      document.getElementById('btnMap').textContent = next === 'hub' ? '🏠 TITLE' : '🗺 MAP';
+      updateHUD();
+      updateActionDeck();
+    }
+
+    function updateHUD() {
+      document.getElementById('petNameDisplay').textContent = state.petName;
+      document.getElementById('coinDisplay').textContent = state.coins;
+      document.getElementById('btnSound').textContent = state.muted ? '🔇' : '🔊';
+
+      const setBar = (idVal, idBar, val, baseColor) => {
+        const v = Math.round(val);
+        document.getElementById(idVal).textContent = `${v}%`;
+        const el = document.getElementById(idBar);
+        el.style.width = `${v}%`;
+        el.className = 'stat-fill ' + (v < 25 ? 'bg-rose-500' : v < 50 ? 'bg-amber-400' : baseColor);
+      };
+
+      setBar('valHunger', 'barHunger', state.stats.hunger, 'bg-emerald-400');
+      setBar('valHygiene', 'barHygiene', state.stats.hygiene, 'bg-sky-400');
+      setBar('valEnergy', 'barEnergy', state.stats.energy, 'bg-purple-400');
+      setBar('valFun', 'barFun', state.stats.fun, 'bg-pink-400');
+    }
+
+    function updateActionDeck() {
+      actionDeck.innerHTML = '';
+
+      if (state.screen === 'hub') {
+        actionDeck.innerHTML = `
+          <div class="text-[8.5px] text-amber-100/90 text-center leading-relaxed px-2">
+            PICK A COZY ROOM TO CARE FOR <span class="text-pink-300">${state.petName}</span>!
+            <span class="text-emerald-300">RUB CAT TO PET • TAP TO BOOP</span>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.screen === 'playroom') {
+        if (state.playroom.miniGame.active) {
+          const mg = state.playroom.miniGame;
+          actionDeck.innerHTML = `
+            <button id="btnMgLeft" class="px-btn !px-4">◀</button>
+            <button id="btnMgRight" class="px-btn !px-4">▶</button>
+            ${mg.gameOver ? `<button id="btnMgAgain" class="px-btn px-btn-green">↻ PLAY AGAIN</button>` : ''}
+            <button id="btnMgExit" class="px-btn px-btn-pink">✕ EXIT</button>
+          `;
+          const bL = document.getElementById('btnMgLeft');
+          const bR = document.getElementById('btnMgRight');
+          bL.onpointerdown = () => (state.keys.left = true);
+          bL.onpointerup = bL.onpointerleave = () => (state.keys.left = false);
+          bR.onpointerdown = () => (state.keys.right = true);
+          bR.onpointerup = bR.onpointerleave = () => (state.keys.right = false);
+          if (mg.gameOver) document.getElementById('btnMgAgain').onclick = startFishCatch;
+          document.getElementById('btnMgExit').onclick = exitFishCatch;
+          return;
+        }
+
+        actionDeck.innerHTML = `
+          <button id="btnTalk" class="px-btn ${state.playroom.recording ? 'px-btn-recording' : 'px-btn-pink'}">
+            ${state.playroom.recording ? '⏹ STOP & MIMIC' : '🎙 HOLD / TAP TO TALK'}
+          </button>
+          <button id="btnMeow" class="px-btn px-btn-amber">🐱 SAY MEOW</button>
+          <button id="btnYarn" class="px-btn px-btn-cyan">🧶 YARN BALL</button>
+          <button id="btnFishGame" class="px-btn px-btn-green">🐟 FISH CATCH</button>
+        `;
+
+        const btnTalk = document.getElementById('btnTalk');
+        let pressStart = 0;
+        btnTalk.onpointerdown = (e) => {
+          e.preventDefault();
+          pressStart = performance.now();
+          if (state.playroom.recording) {
+            audio.stopRecording();
+          } else {
+            audio.startRecording();
+          }
+        };
+        btnTalk.onpointerup = () => {
+          // If user held button longer than 350ms, release stops & mimics automatically!
+          if (state.playroom.recording && performance.now() - pressStart > 350) {
+            audio.stopRecording();
+          }
+        };
+
+        document.getElementById('btnMeow').onclick = triggerSyntheticMeow;
+        document.getElementById('btnYarn').onclick = tossYarnBall;
+        document.getElementById('btnFishGame').onclick = startFishCatch;
+        return;
+      }
+
+      if (state.screen === 'bedroom') {
+        actionDeck.innerHTML = `
+          <button id="btnLamp" class="px-btn ${state.bedroom.lampOn ? 'px-btn-amber' : ''}">
+            ${state.bedroom.lampOn ? '💡 LAMP: ON' : '🌙 LAMP: OFF'}
+          </button>
+          <button id="btnSleep" class="px-btn ${state.bedroom.sleeping ? 'px-btn-green' : 'px-btn-pink'}">
+            ${state.bedroom.sleeping ? '☀ WAKE UP' : '🛏 TUCK IN BED'}
+          </button>
+        `;
+        document.getElementById('btnLamp').onclick = toggleLamp;
+        document.getElementById('btnSleep').onclick = toggleSleep;
+        return;
+      }
+
+      if (state.screen === 'bathroom') {
+        actionDeck.innerHTML = `
+          <button id="btnSponge" class="px-btn ${state.bathroom.spongeActive ? 'px-btn-amber active' : 'px-btn-amber'}">
+            🧽 ${state.bathroom.spongeActive ? 'RUB CAT!' : 'SOAP SPONGE'}
+          </button>
+          <button id="btnShower" class="px-btn ${state.bathroom.showerOn ? 'px-btn-cyan active' : 'px-btn-cyan'}">
+            🚿 ${state.bathroom.showerOn ? 'SHOWER: ON' : 'SHOWER: OFF'}
+          </button>
+          <button id="btnDuck" class="px-btn px-btn-pink">🐥 SQUEAK</button>
+        `;
+        document.getElementById('btnSponge').onclick = toggleSponge;
+        document.getElementById('btnShower').onclick = toggleShower;
+        document.getElementById('btnDuck').onclick = squeakDuck;
+        return;
+      }
+
+      if (state.screen === 'kitchen') {
+        FOODS.forEach(f => {
+          const btn = document.createElement('button');
+          btn.className = 'px-btn ' + (f.cost === 0 ? 'px-btn-green' : 'px-btn-amber');
+          btn.innerHTML = `${f.icon} ${f.label} <span class="text-[7.5px] opacity-90">${f.cost === 0 ? 'FREE' : f.cost + '●'}</span>`;
+          btn.onclick = () => feedFood(f.id);
+          actionDeck.appendChild(btn);
+        });
+        return;
+      }
+
+      if (state.screen === 'closet') {
+        const tabs = document.createElement('div');
+        tabs.className = 'w-full flex justify-center gap-2 pb-1';
+        tabs.innerHTML = `
+          <button id="tabAcc" class="px-btn !py-1.5 !text-[8px] ${state.closetTab === 'acc' ? 'px-btn-pink' : ''}">🎀 ACCESSORIES</button>
+          <button id="tabFur" class="px-btn !py-1.5 !text-[8px] ${state.closetTab === 'fur' ? 'px-btn-amber' : ''}">🎨 FUR COLORS</button>
+        `;
+        actionDeck.appendChild(tabs);
+        document.getElementById('tabAcc').onclick = () => { state.closetTab = 'acc'; audio.playClick(); updateActionDeck(); };
+        document.getElementById('tabFur').onclick = () => { state.closetTab = 'fur'; audio.playClick(); updateActionDeck(); };
+
+        if (state.closetTab === 'acc') {
+          ACCESSORIES.forEach(a => {
+            const owned = state.ownedAccessories.includes(a.id);
+            const equipped = state.accessory === a.id;
+            const btn = document.createElement('button');
+            btn.className = 'px-btn !text-[8px] ' + (equipped ? 'px-btn-green' : owned ? '' : 'px-btn-amber');
+            btn.textContent = equipped ? `✓ ${a.label}` : owned ? a.label : `${a.label} ${a.cost}●`;
+            btn.onclick = () => selectAccessory(a.id);
+            actionDeck.appendChild(btn);
+          });
+        } else {
+          Object.entries(FUR_PALETTES).forEach(([id, pal]) => {
+            const equipped = state.fur === id;
+            const btn = document.createElement('button');
+            btn.className = 'px-btn !text-[8px] ' + (equipped ? 'px-btn-green' : '');
+            btn.innerHTML = `<span style="display:inline-block;width:10px;height:10px;background:${pal.swatch};border:2px solid #09090d;border-radius:2px;"></span> ${pal.name}`;
+            btn.onclick = () => selectFur(id);
+            actionDeck.appendChild(btn);
+          });
+        }
+      }
+    }
+
+    // Floating Toast Helper
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('pixelToast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+    }
+
+    // -------------------------------------------------------------------------
+    // 12. POINTER & KEYBOARD INPUT HANDLING
+    // -------------------------------------------------------------------------
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+
+    function getCanvasCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: ((e.clientX - rect.left) / rect.width) * W,
+        y: ((e.clientY - rect.top) / rect.height) * H
+      };
+    }
+
+    function inRect(x, y, r) {
+      return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+    }
+
+    function dist(x1, y1, x2, y2) {
+      return Math.hypot(x2 - x1, y2 - y1);
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+      audio.ensure();
+      const pt = getCanvasCoords(e);
+      state.pointerDown = true;
+      state.pointerX = state.lastPointerX = pt.x;
+      state.pointerY = state.lastPointerY = pt.y;
+      state.pointerDownTime = performance.now();
+      state.pointerMovedDist = 0;
+
+      // Mini-Game steering
+      if (state.screen === 'playroom' && state.playroom.miniGame.active && !state.playroom.miniGame.gameOver) {
+        state.playroom.miniGame.targetX = pt.x;
+        return;
+      }
+
+      // Title screen: PLAY button check
+      if (state.screen === 'title') {
+        if (inRect(pt.x, pt.y, PLAY_BTN_RECT)) {
+          audio.playStartChime();
+          goToScreen('hub');
+          return;
+        }
+      }
+
+      // Hub screen: Room card clicks
+      if (state.screen === 'hub') {
+        for (const card of HUB_CARDS) {
+          if (pt.x >= card.x && pt.x <= card.x + card.w && pt.y >= card.y && pt.y <= card.y + card.h + 14) {
+            audio.playClick();
+            goToScreen(card.id);
+            return;
+          }
+        }
+        return;
+      }
+
+      // Room clickable props!
+      if (state.screen === 'bedroom') {
+        // Click lamp
+        if (dist(pt.x, pt.y, 95, 145) < 26) {
+          toggleLamp();
+          return;
+        }
+        // Click bed
+        if (pt.x > 165 && pt.x < 280 && pt.y > 130 && pt.y < 212) {
+          toggleSleep();
+          return;
+        }
+      }
+
+      if (state.screen === 'bathroom') {
+        // Click yellow rubber ducky!
+        if (dist(pt.x, pt.y, 154, 218) < 18) {
+          squeakDuck();
+          return;
+        }
+        // Click showerhead
+        if (dist(pt.x, pt.y, 222, 78) < 24) {
+          toggleShower();
+          return;
+        }
+      }
+
+      if (state.screen === 'playroom') {
+        // Click yarn ball
+        const y = state.playroom.yarn;
+        if (dist(pt.x, pt.y, y.x, y.y) < 18) {
+          tossYarnBall();
+          return;
+        }
+      }
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      const pt = getCanvasCoords(e);
+      const dx = pt.x - state.pointerX;
+      const dy = pt.y - state.pointerY;
+      const stepDist = Math.hypot(dx, dy);
+      state.pointerX = pt.x;
+      state.pointerY = pt.y;
+
+      // Mini-game drag steering
+      if (state.screen === 'playroom' && state.playroom.miniGame.active && !state.playroom.miniGame.gameOver) {
+        state.playroom.miniGame.targetX = pt.x;
+        return;
+      }
+
+      // Hover states for Title & Hub
+      if (state.screen === 'title') {
+        state.hoveredPlayBtn = inRect(pt.x, pt.y, PLAY_BTN_RECT);
+      } else if (state.screen === 'hub') {
+        state.hoveredRoom = null;
+        for (const card of HUB_CARDS) {
+          if (pt.x >= card.x && pt.x <= card.x + card.w && pt.y >= card.y && pt.y <= card.y + card.h + 14) {
+            state.hoveredRoom = card.id;
+            break;
+          }
+        }
+        return;
+      }
+
+      // Rubbing / Petting / Soap Scrubbing the Cat!
+      if (state.pointerDown) {
+        state.pointerMovedDist += stepDist;
+        const cat = getCatCenter();
+        if (dist(pt.x, pt.y, cat.x, cat.y) < cat.r) {
+          if (state.screen === 'bathroom' && state.bathroom.spongeActive) {
+            // Scrub soap bubbles onto cat!
+            state.cat.petRubDist += stepDist;
+            if (state.cat.petRubDist > 14) {
+              state.cat.petRubDist = 0;
+              audio.playBubblePop();
+              state.bathroom.soapLevel = Math.min(100, state.bathroom.soapLevel + 10);
+              if (state.bathroom.soapBubbles.length < 18) {
+                state.bathroom.soapBubbles.push({
+                  rx: (Math.random() - 0.5) * 14,
+                  ry: (Math.random() - 0.5) * 14,
+                  r: 2 + Math.random() * 2.5
+                });
+              }
+              spawnParticles('bubble', pt.x, pt.y, 2);
+              state.cat.expression = 'happy';
+              state.cat.exprTimer = 0.8;
+              addStat('hygiene', 2);
+            }
+          } else {
+            // Normal petting rub!
+            state.cat.petRubDist += stepDist;
+            if (state.cat.petRubDist > 26) {
+              state.cat.petRubDist = 0;
+              petCat(pt.x, pt.y);
+            }
+          }
+        }
+      }
+    });
+
+    function endPointer() {
+      if (state.pointerDown && state.pointerMovedDist < 9 && performance.now() - state.pointerDownTime < 280) {
+        // Quick tap directly on cat = funny boop!
+        if (state.screen !== 'hub' && !state.playroom.miniGame.active) {
+          const cat = getCatCenter();
+          if (dist(state.pointerX, state.pointerY, cat.x, cat.y) < cat.r) {
+            if (!(state.screen === 'bathroom' && state.bathroom.spongeActive)) {
+              boopCat();
+            }
+          }
+        }
+      }
+      state.pointerDown = false;
+    }
+
+    canvas.addEventListener('pointerup', endPointer);
+    canvas.addEventListener('pointercancel', endPointer);
+    canvas.addEventListener('pointerleave', () => {
+      state.pointerDown = false;
+      state.hoveredRoom = null;
+      state.hoveredPlayBtn = false;
+    });
+
+    // Keyboard Controls for Fish Catch Mini-Game
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') state.keys.left = true;
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') state.keys.right = true;
+    });
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') state.keys.left = false;
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') state.keys.right = false;
+    });
+
+    // Top HUD Button Listeners
+    document.getElementById('btnMap').onclick = () => {
+      audio.playClick();
+      if (state.screen === 'hub') {
+        goToScreen('title');
+      } else {
+        goToScreen('hub');
+      }
+    };
+
+    document.getElementById('btnSound').onclick = () => {
+      state.muted = !state.muted;
+      if (state.muted) audio.setShowerSound(false);
+      else if (state.bathroom.showerOn) audio.setShowerSound(true);
+      audio.playClick();
+      updateHUD();
+      saveState();
+    };
+
+    // Custom Rename Modal Listeners
+    const renameModal = document.getElementById('renameModal');
+    const renameInput = document.getElementById('renameInput');
+
+    document.getElementById('btnRename').onclick = () => {
+      audio.playClick();
+      renameInput.value = state.petName;
+      renameModal.classList.add('open');
+      setTimeout(() => renameInput.focus(), 50);
+    };
+    document.getElementById('btnCancelRename').onclick = () => {
+      audio.playClick();
+      renameModal.classList.remove('open');
+    };
+    document.getElementById('btnSaveRename').onclick = () => {
+      const cleaned = renameInput.value.trim().toUpperCase().replace(/[^A-Z0-9 ]/g, '').slice(0, 10);
+      if (cleaned) {
+        state.petName = cleaned;
+        saveState();
+        updateHUD();
+        updateActionDeck();
+        showToast(`Say hi to ${state.petName}!`);
+      }
+      audio.playCoin();
+      renameModal.classList.remove('open');
+    };
+    renameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('btnSaveRename').click();
+      if (e.key === 'Escape') document.getElementById('btnCancelRename').click();
+    });
+
+    // -------------------------------------------------------------------------
+    // 13. MAIN SIMULATION & ANIMATION LOOP (60 FPS)
+    // -------------------------------------------------------------------------
+    let lastTime = 0;
+    let statDecayAcc = 0;
+    let sleepZzzAcc = 0;
+    let lullabyStep = 0;
+
+    function update(dt) {
+      // Sample live Web Audio amplitude for Voice Mimic mouth sync
+      audio.sampleAmplitude();
+
+      // Gentle gradual stat decay over time (when playing past title screen)
+      if (state.screen !== 'title') {
+        statDecayAcc += dt;
+        if (statDecayAcc >= 4.0) {
+          statDecayAcc = 0;
+          state.stats.hunger = Math.max(5, state.stats.hunger - 0.8);
+          state.stats.hygiene = Math.max(5, state.stats.hygiene - 0.5);
+          state.stats.fun = Math.max(5, state.stats.fun - 0.7);
+          if (!state.bedroom.sleeping) {
+            state.stats.energy = Math.max(5, state.stats.energy - 0.6);
+          }
+          updateHUD();
+          saveState();
+        }
+      }
+
+      // Cat blinking & expression timers
+      state.cat.blinkTimer -= dt;
+      if (state.cat.blinkTimer <= 0) {
+        state.cat.isBlinking = !state.cat.isBlinking;
+        state.cat.blinkTimer = state.cat.isBlinking ? 0.14 : 2.2 + Math.random() * 2.5;
+      }
+
+      if (state.cat.exprTimer > 0) {
+        state.cat.exprTimer -= dt;
+        if (state.cat.exprTimer <= 0 && !state.playroom.mimicking) {
+          state.cat.expression = 'idle';
+          state.cat.mouthOpen = 0;
+        }
+      }
+
+      if (state.cat.speechTimer > 0) state.cat.speechTimer -= dt;
+      if (state.cat.purrCooldown > 0) state.cat.purrCooldown -= dt;
+
+      // Cat hop physics
+      if (state.cat.hopY < 0 || state.cat.hopVy !== 0) {
+        state.cat.hopY += state.cat.hopVy * dt;
+        state.cat.hopVy += 420 * dt;
+        if (state.cat.hopY >= 0) {
+          state.cat.hopY = 0;
+          state.cat.hopVy = 0;
+        }
+      }
+
+      // Bedroom sleeping energy regeneration + Zzz + gentle lullaby notes
+      if (state.screen === 'bedroom' && state.bedroom.sleeping) {
+        addStat('energy', dt * 7.5);
+        sleepZzzAcc += dt;
+        if (sleepZzzAcc > 0.9) {
+          sleepZzzAcc = 0;
+          spawnParticles('zzz', 226, 138, 1);
+          audio.playLullabyNote(lullabyStep++);
+        }
+      }
+
+      // Bathroom duck hop decay + Shower water drops + rinsing bubbles!
+      if (state.bathroom.duckHop > 0) {
+        state.bathroom.duckHop = Math.max(0, state.bathroom.duckHop - dt * 45);
+      }
+
+      if (state.screen === 'bathroom' && state.bathroom.showerOn) {
+        // Spawn fresh water droplets from showerhead
+        for (let i = 0; i < 3; i++) {
+          state.bathroom.waterDrops.push({
+            x: 158 + Math.random() * 48,
+            y: 82 + Math.random() * 14,
+            vy: 155 + Math.random() * 55
+          });
+        }
+        state.bathroom.waterDrops.forEach(d => { d.y += d.vy * dt; });
+        state.bathroom.waterDrops = state.bathroom.waterDrops.filter(d => d.y < 194);
+
+        // Rinse soap bubbles into sparkles & boost Hygiene!
+        if (state.bathroom.soapBubbles.length > 0 && Math.random() < dt * 7) {
+          const popped = state.bathroom.soapBubbles.pop();
+          spawnParticles('sparkle', 180 + popped.rx * 3, 174 + popped.ry * 3, 2);
+          addStat('hygiene', 8);
+          if (state.bathroom.soapBubbles.length === 0) {
+            state.stats.hygiene = 100;
+            addCoins(5);
+            state.cat.speechText = 'SQUEAKY CLEAN!';
+            state.cat.speechTimer = 2.2;
+            state.cat.expression = 'happy';
+            state.cat.exprTimer = 2.0;
+            spawnParticles('sparkle', 180, 160, 10);
+            showToast('+5 Coins! Sparkling clean!');
+          }
+        } else {
+          addStat('hygiene', dt * 6);
+        }
+      } else {
+        state.bathroom.waterDrops = [];
+      }
+
+      // Playroom Yarn Ball bounce physics
+      if (state.screen === 'playroom' && !state.playroom.miniGame.active) {
+        const y = state.playroom.yarn;
+        if (y.active) {
+          y.x += y.vx * dt;
+          y.y += y.vy * dt;
+          y.vy += 320 * dt;
+          if (y.y > 202) {
+            y.y = 202;
+            y.vy = -y.vy * 0.55;
+            y.vx *= 0.82;
+            if (Math.abs(y.vy) < 20) {
+              y.vy = 0;
+              y.vx *= 0.85;
+              if (Math.abs(y.vx) < 4) y.active = false;
+            }
+          }
+          if (y.x < 92 || y.x > 268) y.vx = -y.vx;
+        }
+      }
+
+      // Playroom Fish Catch Mini-Game Simulation
+      if (state.screen === 'playroom' && state.playroom.miniGame.active) {
+        const mg = state.playroom.miniGame;
+        if (!mg.gameOver) {
+          mg.timeLeft -= dt;
+          if (mg.timeLeft <= 0) {
+            mg.timeLeft = 0;
+            mg.gameOver = true;
+            if (mg.score > state.highScore) state.highScore = mg.score;
+            addCoins(mg.coinsEarned);
+            addStat('fun', 22);
+            saveState();
+            updateActionDeck();
+          }
+
+          // Smooth Cat steering (Keyboard + Pointer)
+          const speed = 220;
+          if (state.keys.left) mg.targetX = mg.catX - speed * dt * 2;
+          if (state.keys.right) mg.targetX = mg.catX + speed * dt * 2;
+          mg.targetX = Math.max(28, Math.min(W - 28, mg.targetX));
+          mg.catX += (mg.targetX - mg.catX) * Math.min(1, dt * 14);
+
+          // Spawn falling goodies & boots
+          mg.spawnTimer -= dt;
+          if (mg.spawnTimer <= 0) {
+            mg.spawnTimer = 0.52 + Math.random() * 0.32;
+            const r = Math.random();
+            const type = r < 0.52 ? 'fish' : r < 0.72 ? 'star' : r < 0.86 ? 'heart' : 'boot';
+            mg.items.push({
+              type,
+              x: 28 + Math.random() * (W - 56),
+              y: 26,
+              vy: 75 + Math.random() * 55 + (30 - mg.timeLeft) * 1.4
+            });
+          }
+
+          // Update items & collision detection
+          for (let i = mg.items.length - 1; i >= 0; i--) {
+            const it = mg.items[i];
+            it.y += it.vy * dt;
+            if (dist(it.x, it.y, mg.catX, 206) < 26) {
+              if (it.type === 'boot') {
+                audio.playBoop();
+                mg.score = Math.max(0, mg.score - 10);
+                state.cat.expression = 'surprised';
+                state.cat.exprTimer = 0.6;
+                state.cat.hopVy = -80;
+              } else {
+                audio.playCoin();
+                const pts = it.type === 'star' ? 25 : it.type === 'heart' ? 15 : 10;
+                const cns = it.type === 'star' ? 3 : 1;
+                mg.score += pts;
+                mg.coinsEarned += cns;
+                state.cat.expression = 'happy';
+                state.cat.exprTimer = 0.5;
+                spawnParticles(it.type === 'heart' ? 'heart' : 'sparkle', it.x, it.y, 4);
+              }
+              mg.items.splice(i, 1);
+            } else if (it.y > 235) {
+              mg.items.splice(i, 1);
+            }
+          }
+        }
+      }
+
+      // Kitchen tossed food parabolic arc
+      if (state.kitchen.flyingFood) {
+        const ff = state.kitchen.flyingFood;
+        ff.t += dt * 2.4;
+        const p = Math.min(1, ff.t);
+        ff.x = ff.sx + (178 - ff.sx) * p;
+        ff.y = ff.sy + (168 - ff.sy) * p - Math.sin(p * Math.PI) * 52;
+        if (p >= 1) {
+          const food = ff.food;
+          state.kitchen.flyingFood = null;
+          audio.playCrunch();
+          state.cat.expression = 'eating';
+          state.cat.exprTimer = 1.1;
+          state.cat.hopVy = -55;
+          state.cat.speechText = food.msg;
+          state.cat.speechTimer = 1.9;
+          addStat('hunger', food.hunger);
+          addStat('fun', food.fun);
+          addStat('energy', food.energy);
+          spawnParticles('crumb', 178, 174, 6);
+          spawnParticles('heart', 178, 150, 3);
+          saveState();
+        }
+      }
+
+      // Update Particles
+      for (let i = state.particles.length - 1; i >= 0; i--) {
+        const p = state.particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.life -= dt;
+        if (p.life <= 0) state.particles.splice(i, 1);
+      }
+    }
+
+    function render(time) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.imageSmoothingEnabled = false;
+
+      if (state.screen === 'title') {
+        drawTitleScreen(ctx, time);
+      } else if (state.screen === 'hub') {
+        drawHubScreen(ctx, time);
+      } else {
+        drawFullRoomScene(ctx, state.screen, time);
+      }
+
+      drawParticles(ctx);
+      drawSpeechBubble(ctx);
+    }
+
+    function gameLoop(ts) {
+      const time = ts / 1000;
+      const dt = Math.min(0.05, lastTime ? (ts - lastTime) / 1000 : 0.016);
+      lastTime = ts;
+
+      update(dt);
+      render(time);
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Initialize game cleanly on window load
+    window.onload = function () {
+      loadState();
+      goToScreen('title');
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+</body>
+</html>
